@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fingerprint Scanner</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2rem;
+      }
+      #imagediv img {
+        margin-top: 1rem;
+        border: 2px solid #ccc;
+        max-width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>🔍 Fingerprint Scanner</h2>
+    <p><strong>Status:</strong> <span id="status">Initializing...</span></p>
+    <div id="imagediv"></div>
+
+    <!-- ✅ Load SDKs FIRST -->
+    <script src="./scripts/es6-shim.js"></script>
+    <script src="./scripts/fingerprint.sdk.min.js"></script>
+    <script src="./scripts/websdk.client.bundle.min.js"></script>
+
+    <!-- ✅ Load CryptoJS SHA256 -->
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+
+    <!-- ✅ Load main logic AFTER all libraries -->
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
