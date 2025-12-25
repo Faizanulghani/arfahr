@@ -1,8 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Shield, Users, Fingerprint, BarChart3 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Shield,
+  Users,
+  Fingerprint,
+  BarChart3,
+} from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -11,33 +24,39 @@ const Index = () => {
     {
       icon: Fingerprint,
       title: "Biometric Authentication",
-      description: "Secure fingerprint-based attendance with DigitalPersona integration"
+      description:
+        "Secure fingerprint-based attendance with DigitalPersona integration",
     },
     {
       icon: Clock,
       title: "Real-time Tracking",
-      description: "Live attendance monitoring and automatic punch in/out logging"
+      description:
+        "Live attendance monitoring and automatic punch in/out logging",
     },
     {
       icon: BarChart3,
       title: "Analytics & Reports",
-      description: "Comprehensive attendance reports and data export capabilities"
+      description:
+        "Comprehensive attendance reports and data export capabilities",
     },
     {
       icon: Users,
       title: "Employee Management",
-      description: "Complete employee database with shift scheduling and management"
+      description:
+        "Complete employee database with shift scheduling and management",
     },
     {
       icon: Shield,
       title: "Role-based Access",
-      description: "Multi-level access control for employees, managers, and admins"
+      description:
+        "Multi-level access control for employees, managers, and admins",
     },
     {
       icon: Calendar,
       title: "Shift Management",
-      description: "Flexible shift scheduling with overtime tracking and alerts"
-    }
+      description:
+        "Flexible shift scheduling with overtime tracking and alerts",
+    },
   ];
 
   return (
@@ -58,7 +77,11 @@ const Index = () => {
               </div>
             </div>
             <div className="flex space-x-3">
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600" variant="outline" onClick={() => navigate("/login")}>
+              <Button
+                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                variant="outline"
+                onClick={() => navigate("/login")}
+              >
                 Login
               </Button>
               {/* <Button onClick={() => navigate("/dashboard")} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -89,20 +112,23 @@ const Index = () => {
             <span className="text-blue-600">Made Simple</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Secure, reliable, and efficient fingerprint-based attendance system for AfraExpress International. 
-            Track employee attendance, manage shifts, and generate comprehensive reports with our advanced biometric solution.
+            Secure, reliable, and efficient fingerprint-based attendance system
+            for AfraExpress International. Track employee attendance, manage
+            shifts, and generate comprehensive reports with our advanced
+            biometric solution.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={() => navigate("/attendance")}
+            <Button
+              size="lg"
+              // onClick={() => navigate("/attendance")}
+              onClick={() => navigate("/login")}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-3"
             >
               Start Attendance
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               onClick={() => navigate("/dashboard")}
               className="text-lg px-8 py-3 border-2 hover:bg-gray-50"
             >
@@ -121,19 +147,25 @@ const Index = () => {
           </Card>
           <Card className="text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-green-600 mb-2">&lt; 2s</div>
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                &lt; 2s
+              </div>
               <div className="text-gray-600">Recognition Time</div>
             </CardContent>
           </Card>
           <Card className="text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-purple-600 mb-2">24/7</div>
+              <div className="text-3xl font-bold text-purple-600 mb-2">
+                24/7
+              </div>
               <div className="text-gray-600">System Uptime</div>
             </CardContent>
           </Card>
           <Card className="text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-orange-600 mb-2">500+</div>
+              <div className="text-3xl font-bold text-orange-600 mb-2">
+                500+
+              </div>
               <div className="text-gray-600">Employees Supported</div>
             </CardContent>
           </Card>
@@ -142,7 +174,10 @@ const Index = () => {
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {features.map((feature, index) => (
-            <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+            <Card
+              key={index}
+              className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm"
+            >
               <CardHeader>
                 <div className="flex items-center space-x-4">
                   <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-lg group-hover:scale-110 transition-transform duration-300">
@@ -168,16 +203,16 @@ const Index = () => {
               Transform your attendance management with our biometric solution
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="secondary"
                 onClick={() => navigate("/employee-registration")}
                 className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3"
               >
                 Register Employee
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="outline"
                 onClick={() => navigate("/reports")}
                 className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3 "
@@ -207,19 +242,51 @@ const Index = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Dashboard</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Attendance</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Reports</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Settings</a></li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Dashboard
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Attendance
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Reports
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Settings
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">System Status</a></li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Contact Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    System Status
+                  </a>
+                </li>
               </ul>
             </div>
             <div>

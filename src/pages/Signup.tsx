@@ -44,29 +44,6 @@ const Signup = () => {
   const [fingerprintId, setFingerprintId] = useState("");
   const [biometricData, setBiometricData] = useState("");
 
-  // Handle fingerprint capture event
-  // useEffect(() => {
-  //   const handleMessage = (event: MessageEvent) => {
-  //     if (event.origin !== window.location.origin) return;
-  //     if (event.data?.type === "fingerprint-register" && event.data.image) {
-  //       const image = event.data.image;
-  //       const hash = btoa(image).substring(0, 32); // short fingerprint ID
-
-  //       setFingerprintId(hash);
-  //       setBiometricData(image);
-  //       toast({
-  //         title: "Fingerprint Captured",
-  //         description: "Biometric data has been set.",
-  //       });
-  //       setBiometricLoading(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("message", handleMessage);
-  //   return () => window.removeEventListener("message", handleMessage);
-  // }, []);
-
-  // helper: convert ArrayBuffer to hex
   const bufToHex = (buffer: ArrayBuffer) =>
     Array.from(new Uint8Array(buffer))
       .map((b) => b.toString(16).padStart(2, "0"))
@@ -152,6 +129,16 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!fingerprintId) {
+      toast({
+        title: "Fingerprint Required",
+        description: "Please scan your fingerprint before signing up.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const {
@@ -448,7 +435,7 @@ const Signup = () => {
               <Button
                 type="button"
                 onClick={handleBiometricCapture}
-                disabled={biometricLoading}
+                disabled={biometricLoading || !!fingerprintId}
                 variant="outline"
                 className="w-full flex items-center justify-center gap-2"
               >
@@ -461,8 +448,16 @@ const Signup = () => {
               </Button>
             </div>
             <div className="col-span-2">
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating Account..." : "Sign Up"}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || !fingerprintId}
+              >
+                {!fingerprintId
+                  ? "Scan Fingerprint First"
+                  : loading
+                  ? "Creating Account..."
+                  : "Sign Up"}
               </Button>
             </div>
           </form>
