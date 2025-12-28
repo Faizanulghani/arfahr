@@ -47,7 +47,9 @@ interface UserProfile {
   department: string;
   position: string;
   employee_id: string;
+  salary: string | number;
   emergency_contact: string;
+  emergency_phone: string;
 }
 
 interface User {
@@ -100,29 +102,35 @@ const UsersManagement = () => {
       });
       return;
     }
-    console.log(authData)
+    console.log("Fetched users from Auth:", authData);
     if (authData?.users) {
-      const formatted = authData.users.map((u: any) => ({
-        id: u.id,
-        email: u.email,
-        username: u.user_metadata?.name || "",
-        role: u.user_metadata?.role || "employee",
-        is_active: u.user_metadata?.status === "active",
-        profile: {
-          first_name: u.user_metadata?.name?.split(" ")[0] || "",
-          last_name: u.user_metadata?.name?.split(" ")[1] || "",
-          phone: u.user_metadata?.phone || "",
-          address: u.user_metadata?.address || "",
-          date_of_birth: "",
-          hire_date: u.created_at || new Date().toISOString(),
-          department: u.user_metadata?.department || "",
-          position: u.user_metadata?.position || "",
-          employee_id:
-            u.user_metadata?.employee_id ||
-            `EMP-${Math.floor(Math.random() * 1000)}`,
-          emergency_contact: "",
-        },
-      }));
+      const formatted = authData.users.map((u: any) => {
+        const meta = u.user_metadata || {};
+
+        const firstName = meta.first_name || meta.name?.split(" ")[0] || "";
+        const lastName = meta.last_name || meta.name?.split(" ")[1] || "";
+
+        return {
+          id: u.id,
+          email: u.email,
+          username: meta.name || `${firstName} ${lastName}`,
+          role: meta.role || "employee",
+          is_active: meta.status === "active" || u.email_confirmed_at !== null,
+          profile: {
+            first_name: firstName,
+            last_name: lastName,
+            phone: meta.phone || "", // Check karein ke AddUserModal mein "phone" key hi use ho rahi hai
+            address: meta.address || "",
+            department: meta.department || "",
+            position: meta.position || "",
+            salary: meta.salary || "0",
+            emergency_contact: meta.emergency_contact || "",
+            emergency_phone: meta.emergency_phone || "",
+            employee_id: meta.employee_id || `EMP-${u.id.slice(0, 4)}`,
+            hire_date: meta.joining_date || u.created_at,
+          },
+        };
+      });
 
       setUsers(formatted);
     }
@@ -641,7 +649,18 @@ const UsersManagement = () => {
                   {selectedUser.profile.position || "—"}
                 </p>
                 <p>
+                  <strong>Salary:</strong> {selectedUser.profile.salary || "—"}
+                </p>
+                <p>
                   <strong>Phone:</strong> {selectedUser.profile.phone || "—"}
+                </p>
+                <p>
+                  <strong>Emergency Contact:</strong>{" "}
+                  {selectedUser.profile.emergency_contact || "—"}
+                </p>
+                <p>
+                  <strong>Emergency Phone:</strong>{" "}
+                  {selectedUser.profile.emergency_phone || "—"}
                 </p>
                 <p>
                   <strong>Address:</strong>{" "}

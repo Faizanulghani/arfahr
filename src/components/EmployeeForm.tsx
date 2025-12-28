@@ -1,43 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { User } from "lucide-react";
-import * as CryptoJS from "crypto-js";
-
-
-interface EmployeeFormData {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  position: string;
-  department: string;
-  salary: string;
-  joining_date: string;
-  employment_type: string;
-  emergency_contact: string;
-  emergency_phone: string;
-  has_agreed_to_terms: boolean;
-  biometric_data?: string;
-  fingerprint_id?: string;
-}
+import { User, Fingerprint } from "lucide-react";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const EmployeeForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [formData, setFormData] = useState<EmployeeFormData>({
+  const [biometricLoading, setBiometricLoading] = useState(false);
+  const [capturedCount, setCapturedCount] = useState(0);
+  const [allBiometricData, setAllBiometricData] = useState<string[]>([]);
+
+  const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
@@ -48,61 +38,59 @@ const EmployeeForm = () => {
     salary: "",
     joining_date: "",
     employment_type: "full-time",
+    password: "",
+    role: "employee",
     emergency_contact: "",
     emergency_phone: "",
     has_agreed_to_terms: false,
-    biometric_data: "",
-    fingerprint_id: ""
   });
 
-  // ✅ Listen for fingerprint scanner messages
+  // ✅ Biometric Listener (Same as Signup)
   useEffect(() => {
-  const handleFingerprint = (e: MessageEvent) => {
-    if (e.data?.type === "fingerprint-register") {
-      const pngBase64 = e.data.image;
+    const handleMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
 
-      const hash = CryptoJS.SHA256(pngBase64).toString();
+      if (e.data?.type === "fingerprint-register") {
+        const newTemplate = e.data.image;
 
-      setFormData(prev => ({
-        ...prev,
-        biometric_data: pngBase64,
-        fingerprint_id: hash,
-      }));
+        setAllBiometricData((prev) => [...prev, newTemplate]);
+        setCapturedCount((prev) => prev + 1);
+        setBiometricLoading(false);
 
-      toast({
-        title: "✅ Fingerprint Captured",
-        description: "Biometric fingerprint has been successfully recorded.",
-      });
+        toast({
+          title: `Finger ${capturedCount + 1} Captured ✅`,
+          description:
+            capturedCount < 9 ? "Scan next finger." : "All 10 fingers ready!",
+        });
+      }
+    };
 
-      setShowScanner(false);
-    }
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [capturedCount]);
+
+  const handleBiometricCapture = () => {
+    setBiometricLoading(true);
+    iframeRef.current?.contentWindow?.postMessage(
+      { action: "start-scan" },
+      "*"
+    );
   };
 
-  window.addEventListener("message", handleFingerprint);
-  return () => window.removeEventListener("message", handleFingerprint);
-}, []);
-
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const validateForm = () => {
-    const required = ["first_name", "last_name", "email", "phone", "position", "department", "joining_date"];
-    for (let field of required) {
-      if (!formData[field as keyof EmployeeFormData]) return false;
-    }
-    return formData.has_agreed_to_terms && formData.fingerprint_id;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (allBiometricData.length < 1) {
       toast({
-        title: "Validation Error",
-        description: "Please fill all required fields, agree to terms, and scan fingerprint.",
+        title: "Error",
+        description: "Scan at least 1 finger.",
         variant: "destructive",
       });
       return;
@@ -111,55 +99,74 @@ const EmployeeForm = () => {
     setIsLoading(true);
 
     try {
-      // ✅ Check for duplicate fingerprint
-      const { data: existing } = await supabase
-        .from("employees")
-        .select("id")
-        .eq("fingerprint_id", formData.fingerprint_id)
-        .maybeSingle();
-
-      if (existing) {
-        toast({
-          title: "⚠️ Duplicate Fingerprint",
-          description: "This fingerprint is already registered.",
-          variant: "destructive",
+      // Step 1: Auth User Create karein (Admin Mode)
+      const { data: authData, error: authError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: formData.email,
+          password: formData.password,
+          email_confirm: true,
+          user_metadata: {
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            position: formData.position,
+            department: formData.department,
+            salary: formData.salary ? parseFloat(formData.salary) : null,
+            employment_type: formData.employment_type,
+            address: formData.address,
+            joining_date: formData.joining_date,
+            phone: formData.phone,
+            emergency_contact: formData.emergency_contact,
+            emergency_phone: formData.emergency_phone,
+            role: "employee",
+          },
         });
-        setIsLoading(false);
-        return;
+
+      if (authError) {
+        console.error("Auth Error:", authError.message);
+        throw authError;
       }
 
-      const { error } = await supabase.from("employees").insert(formData);
+      if (authData?.user) {
+        // Step 2: Employees Table mein entry karein
+        const { error: empError } = await supabase.from("employees").insert([
+          {
+            id: authData.user.id, // Auth ID aur Table ID match honi chahiye
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            email: formData.email,
+            phone: formData.phone,
+            position: formData.position,
+            department: formData.department,
+            salary: formData.salary ? parseFloat(formData.salary) : null,
+            employment_type: formData.employment_type,
+            address: formData.address,
+            joining_date: formData.joining_date,
+            role: "employee",
+            biometric_data: allBiometricData,
+            emergency_contact: formData.emergency_contact,
+            emergency_phone: formData.emergency_phone,
+            has_agreed_to_terms: formData.has_agreed_to_terms,
+            status: "active",
+          },
+        ]);
 
-      if (error) throw error;
+        if (empError) {
+          // Agar yahan error aye to user ko batayein
+          console.error("Database Insert Error:", empError.message);
+          throw empError;
+        }
 
+        toast({
+          title: "✅ Success",
+          description: "Employee Registered Successfully in Database!",
+        });
+
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
       toast({
-        title: "✅ Employee Registered",
-        description: `${formData.first_name} ${formData.last_name} has been saved successfully.`,
-      });
-
-      setFormData({
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        address: "",
-        position: "",
-        department: "",
-        salary: "",
-        joining_date: "",
-        employment_type: "full-time",
-        emergency_contact: "",
-        emergency_phone: "",
-        has_agreed_to_terms: false,
-        biometric_data: "",
-        fingerprint_id: ""
-      });
-
-      navigate("/dashboard");
-    } catch (err) {
-      toast({
-        title: "❌ Error",
-        description: "Something went wrong while saving employee.",
+        title: "❌ Registration Failed",
+        description: err.message || "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -168,115 +175,183 @@ const EmployeeForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <User className="h-6 w-6" />
-          <span>Employee Registration</span>
+          <User className="h-6 w-6 text-blue-600" />
+          <span>New Employee Registration</span>
         </CardTitle>
-        <CardDescription>Fill out the form and set biometric fingerprint</CardDescription>
+        <CardDescription>
+          Enter details and register 10 fingerprints.
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-
-          {/* Personal Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputWithLabel name="first_name" label="First Name *" value={formData.first_name} onChange={handleInputChange} />
-            <InputWithLabel name="last_name" label="Last Name *" value={formData.last_name} onChange={handleInputChange} />
-            <InputWithLabel name="email" label="Email *" type="email" value={formData.email} onChange={handleInputChange} />
-            <InputWithLabel name="phone" label="Phone *" value={formData.phone} onChange={handleInputChange} />
+            <InputWithLabel
+              name="first_name"
+              label="First Name *"
+              value={formData.first_name}
+              onChange={handleInputChange}
+            />
+            <InputWithLabel
+              name="last_name"
+              label="Last Name *"
+              value={formData.last_name}
+              onChange={handleInputChange}
+            />
+            <InputWithLabel
+              name="email"
+              label="Email *"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+            <InputWithLabel
+              name="phone"
+              label="Phone *"
+              value={formData.phone}
+              onChange={handleInputChange}
+            />
           </div>
-
-          {/* Address */}
-          <TextareaWithLabel name="address" label="Address" value={formData.address} onChange={handleInputChange} />
-
-          {/* Job Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputWithLabel name="position" label="Position *" value={formData.position} onChange={handleInputChange} />
-            <InputWithLabel name="department" label="Department *" value={formData.department} onChange={handleInputChange} />
-            <InputWithLabel name="salary" label="Salary" type="number" value={formData.salary} onChange={handleInputChange} />
-            <InputWithLabel name="joining_date" label="Joining Date *" type="date" value={formData.joining_date} onChange={handleInputChange} />
+            <InputWithLabel
+              name="first_name"
+              label="First Name *"
+              value={formData.first_name}
+              onChange={handleInputChange}
+            />
+            {/* ... other fields */}
+            <InputWithLabel
+              name="password"
+              label="Account Password *"
+              type="password"
+              value={formData.password}
+              onChange={handleInputChange}
+            />
           </div>
 
-          {/* Employment Type */}
-          <div className="space-y-3">
-            <Label>Employment Type</Label>
-            <RadioGroup value={formData.employment_type} onValueChange={(val) => setFormData({ ...formData, employment_type: val })}>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="full-time" id="ft" /><Label htmlFor="ft">Full Time</Label>
-                <RadioGroupItem value="part-time" id="pt" /><Label htmlFor="pt">Part Time</Label>
-                <RadioGroupItem value="contract" id="ct" /><Label htmlFor="ct">Contract</Label>
-                <RadioGroupItem value="intern" id="int" /><Label htmlFor="int">Intern</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {/* Emergency Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputWithLabel name="emergency_contact" label="Emergency Contact" value={formData.emergency_contact} onChange={handleInputChange} />
-            <InputWithLabel name="emergency_phone" label="Emergency Phone" value={formData.emergency_phone} onChange={handleInputChange} />
+            <InputWithLabel
+              name="position"
+              label="Position *"
+              value={formData.position}
+              onChange={handleInputChange}
+            />
+            <InputWithLabel
+              name="department"
+              label="Department *"
+              value={formData.department}
+              onChange={handleInputChange}
+            />
+            <InputWithLabel
+              name="salary"
+              label="Salary"
+              type="number"
+              value={formData.salary}
+              onChange={handleInputChange}
+            />
+            <InputWithLabel
+              name="joining_date"
+              label="Joining Date *"
+              type="date"
+              value={formData.joining_date}
+              onChange={handleInputChange}
+            />
           </div>
 
-          {/* Biometric Setup */}
-          <div className="space-y-2">
-            <Button type="button" variant="outline" onClick={() => setShowScanner(true)}>
-              Set Up Biometric
+          {/* Biometric Section - EXACTLY LIKE SIGNUP */}
+          <div className="p-4 bg-slate-50 rounded-lg border space-y-3">
+            <div className="flex justify-between items-center">
+              <Label className="font-bold text-slate-700">
+                Fingerprint Registration
+              </Label>
+              <span
+                className={`text-sm font-medium ${
+                  capturedCount === 10 ? "text-green-600" : "text-blue-600"
+                }`}
+              >
+                {capturedCount} / 10 Captured
+              </span>
+            </div>
+
+            <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+              <div
+                className="bg-blue-600 h-full transition-all duration-500"
+                style={{ width: `${(capturedCount / 10) * 100}%` }}
+              />
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleBiometricCapture}
+              disabled={biometricLoading || capturedCount >= 10}
+              variant="outline"
+              className="w-full flex gap-2 border-blue-200 hover:bg-blue-50"
+            >
+              <Fingerprint className="h-4 w-4" />
+              {biometricLoading
+                ? "Waiting..."
+                : capturedCount < 10
+                ? `Scan Finger #${capturedCount + 1}`
+                : "10 Fingers Ready ✅"}
             </Button>
-            {formData.fingerprint_id ? (
-              <span className="text-green-600">✅ Biometric Set</span>
-            ) : (
-              <span className="text-gray-500">No biometric yet</span>
-            )}
-
-            {showScanner && (
-              <div className="mt-4 border rounded overflow-hidden">
-               <iframe
-  src="/fingerprint/index.html?mode=register"
-  title="Fingerprint Scanner"
-  className="w-full h-[400px] border"
-/>
-              </div>
-            )}
           </div>
 
-          {/* Terms */}
           <div className="flex items-center gap-2">
             <Checkbox
               id="terms"
               checked={formData.has_agreed_to_terms}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, has_agreed_to_terms: Boolean(checked) })
+              onCheckedChange={(val) =>
+                setFormData({ ...formData, has_agreed_to_terms: !!val })
               }
             />
             <Label htmlFor="terms">I agree to the terms and conditions *</Label>
           </div>
 
-          {/* Submit */}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-            disabled={isLoading}
+            className="w-full h-12 text-lg"
+            disabled={isLoading || capturedCount === 0}
           >
-            {isLoading ? "Registering..." : "Register Employee"}
+            {isLoading ? "Saving..." : "Register Employee"}
           </Button>
         </form>
       </CardContent>
+
+      {/* Hidden iframe for scanner logic */}
+      <iframe
+        ref={iframeRef}
+        src="/fingerprint/index.html?mode=register"
+        style={{ display: "none" }}
+        title="Fingerprint Scanner"
+      />
     </Card>
   );
 };
 
-const InputWithLabel = ({ name, label, type = "text", value, onChange }: any) => (
-  <div className="space-y-2">
-    <Label htmlFor={name}>{label}</Label>
-    <Input id={name} name={name} value={value} onChange={onChange} type={type} required />
-  </div>
-);
-
-const TextareaWithLabel = ({ name, label, value, onChange }: any) => (
-  <div className="space-y-2">
-    <Label htmlFor={name}>{label}</Label>
-    <Textarea id={name} name={name} value={value} onChange={onChange} />
+// Helper Components
+const InputWithLabel = ({
+  name,
+  label,
+  type = "text",
+  value,
+  onChange,
+}: any) => (
+  <div className="space-y-1">
+    <Label htmlFor={name} className="text-sm">
+      {label}
+    </Label>
+    <Input
+      id={name}
+      name={name}
+      value={value}
+      onChange={onChange}
+      type={type}
+      required
+      className="focus:ring-blue-500"
+    />
   </div>
 );
 

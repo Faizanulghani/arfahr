@@ -41,8 +41,9 @@ const Signup = () => {
     has_agreed_to_terms: false,
   });
 
-  const [fingerprintId, setFingerprintId] = useState("");
-  const [biometricData, setBiometricData] = useState("");
+  const [capturedCount, setCapturedCount] = useState(0);
+  const [fingerprintIds, setFingerprintIds] = useState<string[]>([]);
+  const [allBiometricData, setAllBiometricData] = useState<string[]>([]);
 
   const bufToHex = (buffer: ArrayBuffer) =>
     Array.from(new Uint8Array(buffer))
@@ -53,69 +54,32 @@ const Signup = () => {
     const handleMessage = async (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
-      let templateData: ArrayBuffer | null = null;
+      if (event.data?.type === "fingerprint-register") {
+        const newTemplate = event.data.image;
+        const newId = nanoid();
 
-      if (
-        event.data?.type === "fingerprint-register" &&
-        event.data.templateBase64
-      ) {
-        const b64 = event.data.templateBase64;
-        const binaryString = atob(b64);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
-        templateData = bytes.buffer;
-      }
+        setFingerprintIds((prev) => [...prev, newId]);
+        setAllBiometricData((prev) => [...prev, newTemplate]);
+        setCapturedCount((prev) => prev + 1);
 
-      if (event.data?.type === "fingerprint-register" && event.data.template) {
-        if (event.data.template instanceof ArrayBuffer) {
-          templateData = event.data.template;
-        } else if (event.data.template.buffer) {
-          templateData = event.data.template.buffer;
-        }
-      }
-
-      if (
-        !templateData &&
-        event.data?.type === "fingerprint-register" &&
-        event.data.image
-      ) {
-        console.warn(
-          "Device returned image only — request template from SDK for uniqueness."
-        );
-        // TEMP fallback (testing only):
-        const tempId = nanoid();
-        setFingerprintId(tempId);
-        setBiometricData(event.data.image);
-        toast({
-          title: "Fingerprint Captured",
-          description: "Your fingerprint has been successfully scanned.",
-        });
         setBiometricLoading(false);
-        return;
-      }
 
-      if (templateData) {
-        const hashBuffer = await crypto.subtle.digest("SHA-256", templateData);
-        const hashHex = bufToHex(hashBuffer).substring(0, 64);
-        setFingerprintId(hashHex);
         toast({
-          title: "Fingerprint Captured",
-          description: "Biometric template set.",
+          title: `Finger ${capturedCount + 1} Captured ✅`,
+          description:
+            capturedCount < 9 ? "Scan next finger." : "All fingers ready!",
         });
-        setBiometricLoading(false);
       }
     };
-
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  }, [capturedCount]);
 
   const handleBiometricCapture = () => {
     setBiometricLoading(true);
     iframeRef.current?.contentWindow?.postMessage(
       { action: "start-scan" },
-      window.location.origin
+      "*"
     );
   };
 
@@ -130,10 +94,10 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!fingerprintId) {
+    if (allBiometricData.length === 0) {
       toast({
         title: "Fingerprint Required",
-        description: "Please scan your fingerprint before signing up.",
+        description: "Please scan your fingerprints before signing up.",
         variant: "destructive",
       });
       return;
@@ -141,47 +105,22 @@ const Signup = () => {
 
     setLoading(true);
 
-    const {
-      first_name,
-      last_name,
-      email,
-      password,
-      phone,
-      address,
-      position,
-      department,
-      salary,
-      joining_date,
-      employment_type,
-      emergency_contact,
-      emergency_phone,
-      role,
-      has_agreed_to_terms,
-    } = formData;
-
-    if (!role) {
-      toast({
-        title: "Missing Role",
-        description: "Please select a role.",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    // ✅ 1. Create Auth user
+    // 1. Auth Signup (Email aur Password yahan use honge)
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
+      email: formData.email,
+      password: formData.password,
       options: {
         data: {
-          name: `${first_name} ${last_name}`,
-          role,
-          department,
-          phone,
-          address,
-          status: "active",
-          position,
+          name: `${formData.first_name} ${formData.last_name}`,
+          role: formData.role,
+          phone: formData.phone,
+          address: formData.address,
+          position: formData.position,
+          department: formData.department,
+          salary: formData.salary,
+          employment_type: formData.employment_type,
+          emergency_contact: formData.emergency_contact,
+          emergency_phone: formData.emergency_phone,
         },
       },
     });
@@ -189,69 +128,44 @@ const Signup = () => {
     if (authError || !authData.user) {
       toast({
         title: "Signup Failed",
-        description: authError?.message || "Something went wrong",
+        description: authError?.message,
         variant: "destructive",
       });
       setLoading(false);
       return;
     }
 
-    const userId = authData.user.id;
+    const employeeData = {
+      id: authData.user.id,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      email: formData.email,
+      phone: formData.phone,
+      position: formData.position,
+      department: formData.department,
+      salary: formData.salary ? parseFloat(formData.salary) : null,
+      employment_type: formData.employment_type,
+      address: formData.address || null,
+      joining_date: formData.joining_date,
+      status: "active",
+      emergency_contact: formData.emergency_contact || null,
+      emergency_phone: formData.emergency_phone || null,
+      biometric_data: allBiometricData,
+      has_agreed_to_terms: formData.has_agreed_to_terms,
+      role: formData.role,
+      raw_template: allBiometricData[0],
+      raw_samples: allBiometricData,
+    };
 
-    // ✅ 2. Check duplicate fingerprint
-    if (fingerprintId) {
-      const { data: existing, error: checkError } = await supabase
-        .from("employees")
-        .select("id")
-        .eq("fingerprint_id", fingerprintId)
-        .maybeSingle();
-
-      if (checkError) {
-        toast({
-          title: "Error",
-          description: "Failed to check fingerprint duplicates.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-      if (existing) {
-        toast({
-          title: "Duplicate Fingerprint",
-          description: "This fingerprint is already registered.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-    }
-
-    // ✅ 3. Insert employee profile
-    const { error: empInsertError } = await supabase.from("employees").insert([
-      {
-        id: userId, // same as Auth user
-        first_name,
-        last_name,
-        email,
-        phone,
-        address: address || null,
-        position,
-        department,
-        salary: salary ? Number(salary) : null,
-        joining_date,
-        employment_type,
-        emergency_contact: emergency_contact || null,
-        emergency_phone: emergency_phone || null,
-        biometric_data: biometricData || null,
-        fingerprint_id: fingerprintId || null,
-        has_agreed_to_terms,
-        role,
-      },
-    ]);
+    // 3. Insert into Employees Table
+    const { error: empInsertError } = await supabase
+      .from("employees")
+      .insert([employeeData]);
 
     if (empInsertError) {
+      console.error("DB Error:", empInsertError);
       toast({
-        title: "Signup Error",
+        title: "Database Error",
         description: empInsertError.message,
         variant: "destructive",
       });
@@ -261,8 +175,9 @@ const Signup = () => {
 
     toast({
       title: "Account Created",
-      description: "You can now login using your credentials",
+      description: "Employee profile created successfully.",
     });
+
     navigate("/login");
     setLoading(false);
   };
@@ -431,33 +346,51 @@ const Signup = () => {
               />
               <Label>I agree to the terms and conditions</Label>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-2 space-y-3 p-4 bg-slate-50 rounded-lg border">
+              <div className="flex justify-between text-sm font-medium">
+                <span>Fingerprint Registration</span>
+                <span
+                  className={
+                    capturedCount === 10 ? "text-green-600" : "text-blue-600"
+                  }
+                >
+                  {capturedCount} / 10 Captured
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-blue-600 h-full transition-all duration-500"
+                  style={{ width: `${(capturedCount / 10) * 100}%` }}
+                />
+              </div>
+
               <Button
                 type="button"
                 onClick={handleBiometricCapture}
-                disabled={biometricLoading || !!fingerprintId}
+                disabled={biometricLoading || capturedCount >= 10}
                 variant="outline"
-                className="w-full flex items-center justify-center gap-2"
+                className="w-full flex gap-2"
               >
                 <Fingerprint className="h-4 w-4" />
                 {biometricLoading
-                  ? "Capturing Fingerprint..."
-                  : biometricData
-                  ? "Fingerprint Captured ✅"
-                  : "Scan Fingerprint"}
+                  ? "Waiting for Scanner..."
+                  : capturedCount < 10
+                  ? `Scan Finger #${capturedCount + 1}`
+                  : "Registration Complete ✅"}
               </Button>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-2 pt-4">
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading || !fingerprintId}
+                // Fix 3: Button active logic
+                disabled={loading || allBiometricData.length === 0}
               >
-                {!fingerprintId
-                  ? "Scan Fingerprint First"
-                  : loading
+                {loading
                   ? "Creating Account..."
-                  : "Sign Up"}
+                  : allBiometricData.length === 0
+                  ? "Scan Fingerprint to Continue"
+                  : `Sign Up with ${allBiometricData.length} Fingers`}
               </Button>
             </div>
           </form>

@@ -12,19 +12,12 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Clock,
-  CheckCircle,
-  XCircle,
   LogOut,
   Fingerprint,
   User,
   Activity,
-  Timer,
-  Coffee,
   MapPin,
   Bell,
-  Settings,
-  Calendar,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import UpcomingShifts from "./UpcomingShifts";
@@ -100,10 +93,7 @@ const EmployeePortal = () => {
     setHoursThisWeek(`${Math.round(weekHrs * 10) / 10}h`);
   };
 
-  // Make sure there is an employees table row for the given user.
-  // If missing, create one with safe default values so foreign key on attendances doesn't fail.
   const ensureEmployeeRow = async (userRow: any): Promise<any> => {
-    // Try to find existing employee (match by email or fingerprint_id)
     const { data: emp, error: empErr } = await supabase
       .from("employees")
       .select("*")
@@ -121,7 +111,6 @@ const EmployeePortal = () => {
     }
     if (emp) return emp;
 
-    // create new minimal employee row (lots of NOT NULL fields — provide safe defaults)
     const [first = "", last = ""] = (
       userRow.full_name ||
       userRow.name ||
@@ -165,20 +154,6 @@ const EmployeePortal = () => {
     }
     return inserted;
   };
-
-  // ---------- Fetch / refresh ----------
-  // const fetchAttendanceData = async () => {
-  //   if (!user) return;
-  //   const { data } = await supabase
-  //     .from("attendances")
-  //     .select("*")
-  //     .eq("employee_id", user.id)
-  //     .order("check_in", { ascending: true });
-
-  //   const records = data || [];
-  //   setAttendanceRecords(records);
-  //   recalcAndSetHours(records);
-  // };
 
   const fetchAttendanceData = useCallback(async () => {
     if (!user?.id) return;
@@ -252,7 +227,6 @@ const EmployeePortal = () => {
     };
 
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -274,61 +248,37 @@ const EmployeePortal = () => {
     setIsProcessingScan(true);
 
     try {
-      // Step 1: Fetch all employees with biometric data
-      const { data: usersWithBio, error } = await supabase
+      const { data: userData, error } = await supabase
         .from("employees")
-        .select("id, first_name, email, biometric_data, fingerprint_id")
-        .not("fingerprint_id", "is", null);
+        .select("id, first_name, biometric_data")
+        .eq("id", user.id)
+        .single();
 
-      if (error) {
-        console.error("Error fetching users:", error);
-        toast({
-          title: "Error",
-          description: "Could not load biometric users",
-          variant: "destructive",
-        });
-        setIsProcessingScan(false);
+      if (error || !userData) {
+        toast({ title: "Biometric not found", variant: "destructive" });
         return;
       }
 
-      console.log(
-        "✅ Loaded employees from Supabase:",
-        usersWithBio?.length || 0
-      );
-
-      // Step 2: Wait until iframe is loaded fully before posting data
-      const waitForIframeLoad = () =>
-        new Promise<void>((resolve) => {
-          if (iframeRef.current?.contentWindow) return resolve();
-          iframeRef.current?.addEventListener("load", () => resolve(), {
-            once: true,
-          });
+      const waitForIframe = () =>
+        new Promise<void>((res) => {
+          if (iframeRef.current?.contentWindow) res();
+          else
+            iframeRef.current?.addEventListener("load", () => res(), {
+              once: true,
+            });
         });
 
-      await waitForIframeLoad();
+      await waitForIframe();
 
-      // Step 3: Post employee list safely AFTER iframe load
       iframeRef.current?.contentWindow?.postMessage(
-        { type: "employees", data: usersWithBio || [] },
+        {
+          type: "employees",
+          data: [userData],
+        },
         window.location.origin
       );
-
-      console.log("👥 Sent employee list:", (usersWithBio || []).length);
-
-      // Step 4: Give scanner 500ms to initialize
-      await new Promise((res) => setTimeout(res, 500));
-
-      toast({
-        title: "Scanner Ready",
-        description: "Place your finger on the scanner now.",
-      });
     } catch (err) {
-      console.error("Error initializing scanner:", err);
-      toast({
-        title: "Error",
-        description: "Scanner failed to initialize",
-        variant: "destructive",
-      });
+      console.error(err);
     } finally {
       setIsProcessingScan(false);
     }
@@ -337,80 +287,45 @@ const EmployeePortal = () => {
   // Handle messages from the iframe scanner
   useEffect(() => {
     const onMessage = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) {
-        console.warn("Ignoring event from origin", event.origin);
-        return;
-      }
+      if (event.origin !== window.location.origin) return;
 
       const data = event.data;
-      if (!data || !data.type) return;
+      if (!data || data.type !== "fingerprint-attendance") return;
 
-      // fingerprint-attendance: { type, status, employee, image }
-      if (data.type === "fingerprint-attendance") {
-        setIsProcessingScan(true);
-        const { status, employee: matchedEmployee } = data;
+      setIsProcessingScan(true);
+      const { status, employee: matchedEmployee } = data;
 
-        if (status !== "match" || !matchedEmployee?.id) {
+      try {
+        if (status !== "match" || !matchedEmployee) {
           toast({
             title: "No Match",
-            description: "Fingerprint not recognized",
+            description: "Fingerprint not recognized.",
             variant: "destructive",
           });
-          setIsProcessingScan(false);
           return;
         }
 
-        try {
-          const { data: empRow } = await supabase
-            .from("employees")
-            .select("*")
-            .eq("fingerprint_id", matchedEmployee.fingerprint_id)
-            .limit(1)
-            .maybeSingle();
-
-          let targetEmployee;
-          if (!empRow) {
-            toast({
-              title: "Fingerprint not linked",
-              description: "No employee found for this fingerprint",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          if (empRow) {
-            targetEmployee = empRow;
-          } else {
-            // attempt to ensure employee row exists (create fallback using users table data)
-            targetEmployee = await ensureEmployeeRow(matchedEmployee);
-            if (!targetEmployee) {
-              throw new Error("Could not create/find employee record");
-            }
-          }
-
-          // Mark attendance by using the employee.id (FK)
-          await markAttendanceForEmployeeId(targetEmployee.id, matchedEmployee);
-        } catch (err) {
-          console.error("Error processing biometric match:", err);
+        if (user && String(matchedEmployee.id) === String(user.id)) {
+          await markAttendanceForEmployeeId(user.id, matchedEmployee);
+        } else {
           toast({
-            title: "Error",
-            description: "Failed to record attendance",
+            title: "Verification Failed",
+            description: "This finger does not match your profile.",
             variant: "destructive",
           });
-        } finally {
-          setIsProcessingScan(false);
-          setIframeVisible(false);
         }
+      } catch (err) {
+        console.error("Scan Process Error:", err);
+      } finally {
+        setIsProcessingScan(false);
+        setIframeVisible(false);
       }
     };
-
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, [user, currentUser]);
 
   // ---------- Attendance logic ----------
-  // Mark attendance by employees.id (this avoids FK errors). matchedUser param is optional; if provided we show name
   const markAttendanceForEmployeeId = async (
     employeeId: string,
     matchedUser?: any

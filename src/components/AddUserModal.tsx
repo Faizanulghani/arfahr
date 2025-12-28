@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,13 +15,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Fingerprint } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { nanoid } from "nanoid";
+import { cn } from "@/lib/utils";
 
 const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
-  const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-
   const [loading, setLoading] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+
+  const [biometricCaptured, setBiometricCaptured] = useState(0);
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -59,35 +59,14 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
         position: p.position || "",
         department: p.department || "",
         joining_date: p.hire_date ? p.hire_date.split("T")[0] : "",
-        employment_type: "full_time",
+        employment_type: p.employment_type || "full_time",
         emergency_contact: p.emergency_contact || "",
-        emergency_phone: "",
+        emergency_phone: p.emergency_phone || "",
+        salary: p.salary || "",
         role: selectedUser.role || "employee",
       }));
     }
   }, [selectedUser]);
-
-  // Handle fingerprint capture event
-  // useEffect(() => {
-  //   const handleMessage = (event: MessageEvent) => {
-  //     if (event.origin !== window.location.origin) return;
-  //     if (event.data?.type === "fingerprint-register" && event.data.image) {
-  //       const image = event.data.image;
-  //       const hash = btoa(image).substring(0, 32);
-
-  //       setFingerprintId(hash);
-  //       setBiometricData(image);
-  //       toast({
-  //         title: "Fingerprint Captured",
-  //         description: "Biometric data has been set.",
-  //       });
-  //       setBiometricLoading(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("message", handleMessage);
-  //   return () => window.removeEventListener("message", handleMessage);
-  // }, []);
 
   const bufToHex = (buffer: ArrayBuffer) =>
     Array.from(new Uint8Array(buffer))
@@ -98,65 +77,32 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
     const handleMessage = async (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
-      let templateData: ArrayBuffer | null = null;
+      if (event.data?.type === "fingerprint-register") {
+        // Success logic: Increment progress
+        setBiometricCaptured((prev) => Math.min(prev + 1, 10));
 
-      if (
-        event.data?.type === "fingerprint-register" &&
-        event.data.templateBase64
-      ) {
-        const b64 = event.data.templateBase64;
-        const binaryString = atob(b64);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
-        templateData = bytes.buffer;
-      }
-
-      if (event.data?.type === "fingerprint-register" && event.data.template) {
-        if (event.data.template instanceof ArrayBuffer) {
-          templateData = event.data.template;
-        } else if (event.data.template.buffer) {
-          templateData = event.data.template.buffer;
+        // Agar pehli finger hai ya unique ID chahiye
+        if (!fingerprintId) {
+          setFingerprintId(nanoid());
         }
-      }
 
-      if (
-        !templateData &&
-        event.data?.type === "fingerprint-register" &&
-        event.data.image
-      ) {
-        console.warn(
-          "Device returned image only — request template from SDK for uniqueness."
-        );
-        // TEMP fallback (testing only):
-        const tempId = nanoid();
-        setFingerprintId(tempId);
-        setBiometricData(event.data.image);
         toast({
-          title: "Fingerprint Captured",
-          description: "Your fingerprint has been successfully scanned.",
+          title: "Finger Captured",
+          description: `Fingerprint ${
+            biometricCaptured + 1
+          } registered successfully.`,
         });
-        setBiometricLoading(false);
-        return;
-      }
 
-      if (templateData) {
-        const hashBuffer = await crypto.subtle.digest("SHA-256", templateData);
-        const hashHex = bufToHex(hashBuffer).substring(0, 64);
-        setFingerprintId(hashHex);
-        toast({
-          title: "Fingerprint Captured",
-          description: "Biometric template set.",
-        });
         setBiometricLoading(false);
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  }, [biometricCaptured, fingerprintId]);
 
   const handleBiometricCapture = () => {
+    if (selectedUser || biometricCaptured >= 10) return;
     setBiometricLoading(true);
     iframeRef.current?.contentWindow?.postMessage(
       { action: "start-scan" },
@@ -199,7 +145,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
       const { error: updateError } = await supabase
         .from("employees")
         .update({
-          first_name,
+          first_name: formData.first_name,
           last_name,
           email,
           phone,
@@ -212,7 +158,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
           emergency_contact,
           emergency_phone,
           biometric_data: biometricData || null,
-          fingerprint_id: fingerprintId || null,
+          // fingerprint_id: fingerprintId || null,
           role,
         })
         .eq("id", selectedUser.id);
@@ -221,12 +167,17 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
         await supabaseAdmin.auth.admin.updateUserById(selectedUser.id, {
           email,
           user_metadata: {
-            name: `${first_name} ${last_name}`,
+            ...selectedUser.user_metadata,
+            name: `${formData.first_name} ${formData.last_name}`,
+            first_name: formData.first_name,
+            last_name: formData.last_name,
             role,
             department,
             phone,
             address,
             position,
+            salary,
+            emergency_phone,
             status: selectedUser.status || "active",
           },
         });
@@ -273,11 +224,15 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
         email_confirm: true,
         user_metadata: {
           name: `${first_name} ${last_name}`,
+          first_name: first_name, // Explicitly add these
+          last_name: last_name,
           role,
           department,
           phone,
           address,
           position,
+          salary,
+          joining_date,
           status: "active",
         },
       });
@@ -312,7 +267,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
         emergency_contact,
         emergency_phone,
         biometric_data: biometricData || null,
-        fingerprint_id: fingerprintId || null,
+        // fingerprint_id: fingerprintId || null,
         has_agreed_to_terms,
         role,
         status: "active",
@@ -521,29 +476,52 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
               </div>
             )}
 
-            <div className="col-span-2">
-              <Button
-                type="button"
-                onClick={handleBiometricCapture}
-                disabled={biometricLoading}
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Fingerprint className="h-4 w-4" />
-                {biometricLoading
-                  ? "Capturing Fingerprint..."
-                  : biometricData
-                  ? "Fingerprint Captured ✅"
-                  : "Scan Fingerprint"}
-              </Button>
-            </div>
+            {!selectedUser && (
+              <div className="col-span-2 space-y-3 p-4 bg-slate-50 rounded-lg border">
+                <div className="flex justify-between text-sm font-medium">
+                  <span>Fingerprint Registration</span>
+                  <span
+                    className={
+                      biometricCaptured === 10
+                        ? "text-green-600"
+                        : "text-blue-600"
+                    }
+                  >
+                    {biometricCaptured} / 10 Captured
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-blue-600 h-full transition-all duration-500"
+                    style={{ width: `${(biometricCaptured / 10) * 100}%` }}
+                  />
+                </div>
 
-            <div className="col-span-2">
-              <Button type="submit" className="w-full" disabled={loading}>
+                <Button
+                  type="button"
+                  onClick={handleBiometricCapture}
+                  disabled={biometricLoading || biometricCaptured >= 10}
+                  variant="outline"
+                  className="w-full flex gap-2"
+                >
+                  <Fingerprint className="h-4 w-4" />
+                  {biometricLoading
+                    ? "Waiting for Scanner..."
+                    : biometricCaptured < 10
+                    ? `Scan Finger #${biometricCaptured + 1}`
+                    : "Registration Complete ✅"}
+                </Button>
+              </div>
+            )}
+
+            <div className="col-span-2 pt-4">
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || (!selectedUser && !fingerprintId)}
+              >
                 {loading
-                  ? selectedUser
-                    ? "Updating..."
-                    : "Adding User..."
+                  ? "Processing..."
                   : selectedUser
                   ? "Update User"
                   : "Add User"}
@@ -553,12 +531,14 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
         </CardContent>
       </Card>
 
-      <iframe
-        ref={iframeRef}
-        src="/fingerprint/index.html?mode=register"
-        style={{ display: "none" }}
-        title="Fingerprint Scanner"
-      />
+      {!selectedUser && (
+        <iframe
+          ref={iframeRef}
+          src="/fingerprint/index.html?mode=register"
+          style={{ display: "none" }}
+          title="Fingerprint Scanner"
+        />
+      )}
     </div>
   );
 };

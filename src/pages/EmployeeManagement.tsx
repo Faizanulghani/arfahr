@@ -35,7 +35,9 @@ const EmployeeManagement = () => {
   const fetchEmployees = async () => {
     const { data, error } = await supabase
       .from("employees")
-      .select("*")
+      .select(
+        "id, first_name, last_name, email, position, department, status, created_at"
+      )
       .order("created_at", { ascending: false });
     if (error) {
       toast({ title: "Failed to load employees", variant: "destructive" });
