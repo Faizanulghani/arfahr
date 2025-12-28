@@ -55,6 +55,11 @@ const Signup = () => {
       if (event.origin !== window.location.origin) return;
 
       if (event.data?.type === "fingerprint-register") {
+        if (capturedCount >= 10) {
+          setBiometricLoading(false);
+          return;
+        }
+
         const newTemplate = event.data.image;
         const newId = nanoid();
 
@@ -76,6 +81,8 @@ const Signup = () => {
   }, [capturedCount]);
 
   const handleBiometricCapture = () => {
+    if (capturedCount >= 10) return;
+
     setBiometricLoading(true);
     iframeRef.current?.contentWindow?.postMessage(
       { action: "start-scan" },
@@ -93,6 +100,15 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (allBiometricData.length < 5) {
+      toast({
+        title: "Fingers Incomplete",
+        description: `Please scan at least 5 fingers. You have only scanned ${allBiometricData.length}.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (allBiometricData.length === 0) {
       toast({
@@ -346,51 +362,151 @@ const Signup = () => {
               />
               <Label>I agree to the terms and conditions</Label>
             </div>
-            <div className="col-span-2 space-y-3 p-4 bg-slate-50 rounded-lg border">
-              <div className="flex justify-between text-sm font-medium">
-                <span>Fingerprint Registration</span>
-                <span
-                  className={
-                    capturedCount === 10 ? "text-green-600" : "text-blue-600"
-                  }
-                >
-                  {capturedCount} / 10 Captured
+            <div className="col-span-2 space-y-6 p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
+              <div className="flex justify-between items-center">
+                <Label className="text-blue-600 font-bold flex items-center gap-2">
+                  <Fingerprint className="h-5 w-5" />
+                  BIOMETRIC VERIFICATION
+                </Label>
+                <span className="text-sm font-mono font-bold text-blue-500">
+                  {capturedCount}/10 Done
                 </span>
               </div>
-              <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+
+              {/* Progress Container */}
+              <div className="relative flex items-center justify-between px-2 h-20">
+                <div className="absolute top-[28px] left-0 w-full h-[2px] bg-slate-100 z-0" />
+
+                {/* 🟢 Active Green Progress Line */}
                 <div
-                  className="bg-blue-600 h-full transition-all duration-500"
-                  style={{ width: `${(capturedCount / 10) * 100}%` }}
+                  className="absolute top-[28px] left-0 h-[2px] bg-green-500 z-0 transition-all duration-700 ease-in-out"
+                  style={{
+                    width: `${(Math.max(0, capturedCount - 1) / 9) * 100}%`,
+                  }}
                 />
+
+                {[...Array(10)].map((_, index) => {
+                  const isCaptured = index < capturedCount;
+                  const isCurrent = index === capturedCount;
+                  const isScanning = isCurrent && biometricLoading;
+
+                  return (
+                    <div
+                      key={index}
+                      className="relative z-10 flex flex-col items-center"
+                    >
+                      {/* Node Circle */}
+                      <div
+                        className={`
+              w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white
+              ${
+                isCaptured
+                  ? "border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                  : isScanning
+                  ? "border-blue-500 animate-bounce shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                  : "border-slate-200 text-slate-300"
+              }
+            `}
+                      >
+                        {" "}
+                        <Fingerprint
+                          className={`h-5 w-5 transition-colors duration-500 ${
+                            isCaptured
+                              ? "text-green-500"
+                              : isScanning
+                              ? "text-blue-500"
+                              : "inherit"
+                          }`}
+                        />
+                        {/* Scanning Radar Effect */}
+                        {isScanning && (
+                          <div className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping" />
+                        )}
+                      </div>
+
+                      <span
+                        className={`text-[9px] mt-2 font-black transition-colors ${
+                          isCaptured ? "text-green-600" : "text-slate-400"
+                        }`}
+                      >
+                        F-{index + 1}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
+              {/* Capture Button */}
               <Button
                 type="button"
                 onClick={handleBiometricCapture}
                 disabled={biometricLoading || capturedCount >= 10}
-                variant="outline"
-                className="w-full flex gap-2"
+                className={`w-full h-12 rounded-xl transition-all duration-500 group overflow-hidden relative shadow-md ${
+                  capturedCount >= 10
+                    ? "bg-slate-400 cursor-not-allowed opacity-80"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
               >
-                <Fingerprint className="h-4 w-4" />
-                {biometricLoading
-                  ? "Waiting for Scanner..."
-                  : capturedCount < 10
-                  ? `Scan Finger #${capturedCount + 1}`
-                  : "Registration Complete ✅"}
+                <div className="relative z-10 flex items-center justify-center gap-2">
+                  {capturedCount >= 10 ? (
+                    <>
+                      <Fingerprint className="h-5 w-5" />
+                      <span className="font-bold tracking-tight">
+                        Limit Reached (10/10)
+                      </span>
+                    </>
+                  ) : biometricLoading ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Scanning Finger {capturedCount + 1}...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Fingerprint className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                      <span className="font-bold tracking-tight">
+                        Capture Finger {capturedCount + 1}
+                      </span>
+                    </>
+                  )}
+                </div>
               </Button>
             </div>
             <div className="col-span-2 pt-4">
               <Button
                 type="submit"
-                className="w-full"
-                // Fix 3: Button active logic
                 disabled={loading || allBiometricData.length === 0}
+                className={`w-full h-12 text-base font-bold transition-all duration-300 shadow-sm
+      ${
+        allBiometricData.length > 0
+          ? "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-blue-200 hover:shadow-lg active:scale-[0.98]"
+          : "bg-slate-100 text-slate-400"
+      }`}
               >
-                {loading
-                  ? "Creating Account..."
-                  : allBiometricData.length === 0
-                  ? "Scan Fingerprint to Continue"
-                  : `Sign Up with ${allBiometricData.length} Fingers`}
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Creating Account...</span>
+                  </div>
+                ) : allBiometricData.length === 0 ? (
+                  "Scan Fingerprint to Continue"
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>Sign Up with {allBiometricData.length} Fingers</span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      />
+                    </svg>
+                  </div>
+                )}
               </Button>
             </div>
           </form>
