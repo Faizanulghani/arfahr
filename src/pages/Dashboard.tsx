@@ -37,7 +37,7 @@ import useLogout from "@/api/useLogout";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
- const logout = useLogout()
+  const logout = useLogout();
   const [user, setUser] = useState<any>(null);
   const [employees, setEmployees] = useState<any[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
@@ -127,8 +127,11 @@ const Dashboard = () => {
     .reverse()
     .map((record) => {
       const employee = employees.find((emp) => emp.id === record.employee_id);
+      console.log("Employee Data", employee);
       return {
-        name: employee?.name || "Unknown Employee",
+        name: employee
+          ? `${employee.first_name} ${employee.last_name}`
+          : "Unknown",
         action: record.check_out ? "Checked Out" : "Checked In",
         time: new Date(
           record.check_out || record.check_in
