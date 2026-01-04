@@ -1,0 +1,122 @@
+{
+  "navigationCards": {
+    "usersManagement": {
+      "title": "Gestion des utilisateurs",
+      "description": "Gérer les utilisateurs et le contrôle d'accès"
+    },
+    "employeeManagement": {
+      "title": "Gestion des employés",
+      "description": "Gérer les profils et informations des employés"
+    },
+    "shiftsManagement": {
+      "title": "Gestion des shifts",
+      "description": "Configurer les shifts et horaires de travail"
+    },
+    "salaryManagement": {
+      "title": "Gestion des salaires",
+      "description": "Gérer les structures salariales des employés"
+    },
+    "attendanceTracking": {
+      "title": "Suivi des présences",
+      "description": "Marquer la présence et consulter les enregistrements"
+    },
+    "reportsAnalytics": {
+      "title": "Rapports et analyses",
+      "description": "Consulter les rapports complets de présence"
+    },
+    "systemSettings": {
+      "title": "Paramètres du système",
+      "description": "Configurer les préférences du système"
+    }
+  },
+  "stats": {
+    "totalEmployees": "Employés Totaux",
+    "presentToday": "Présents Aujourd'hui",
+    "absentToday": "Absents Aujourd'hui",
+    "lateArrivals": "Retards"
+  },
+  "welcome": "Bon retour",
+  "currentTime": "Heure actuelle",
+  "logout": "Deconnexion",
+
+  "dashboardMetrics": {
+    "weeklyAttendance": "Présence Hebdomadaire",
+    "productivity": "Productivité",
+    "onTimeRate": "Taux de Ponctualité"
+  },
+  "recentActivities": {
+    "title": "Activités récentes",
+    "viewAll": "Dernières activités de présence"
+  },
+  "todaySummary": {
+    "title": "Résumé du jour",
+    "attendanceRate": "Taux de présence",
+    "present": "Présents",
+    "absent": "Absents"
+  },
+  "quickActions": {
+    "addEmployee": {
+      "title": "Ajouter un employé",
+      "description": "Enregistrer un nouvel employé"
+    },
+    "markAttendance": {
+      "title": "Marquer la présence",
+      "description": "Pointer les employés"
+    },
+    "generateReport": {
+      "title": "Générer un rapport",
+      "description": "Créer un rapport de présence"
+    },
+    "viewCalendar": {
+      "title": "Voir le calendrier",
+      "description": "Vérifier l'emploi du temps"
+    },
+    "analytics": {
+      "title": "Analytique",
+      "description": "Voir des analyses détaillées"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "description": "Configurer le système"
+    }
+  },
+  "employeeSearch": {
+    "title": "Recherche d'employés",
+    "placeholder": "Rechercher des employés...",
+    "noResults": "Aucun employé trouvé"
+  },
+  "quickAttendance": {
+    "title": "Présence rapide",
+    "absent": "Absent",
+    "checkIn": "Pointage entrée",
+    "present": "Présent",
+    "checkOut": "Pointage sortie",
+    "completed": "Terminé"
+  },
+  "notifications": {
+    "lateArrivals": {
+      "title": "Alerte Retards",
+      "message": "3 employés arrivent régulièrement en retard cette semaine",
+      "action": "Voir les détails",
+      "time": "il y a 2 heures"
+    },
+    "systemUpdate": {
+      "title": "Mise à jour du système",
+      "message": "Le système de présence sera mis à jour ce soir à 2h",
+      "action": "En savoir plus",
+      "time": "il y a 4 heures"
+    },
+    "monthlyReport": {
+      "title": "Rapport mensuel prêt",
+      "message": "Le rapport de présence d'octobre a été généré",
+      "action": "Télécharger",
+      "time": "il y a 1 jour"
+    },
+    "missingCheckOuts": {
+      "title": "Pointages manquants",
+      "message": "2 employés ont oublié de pointer leur sortie hier",
+      "action": "Vérifier",
+      "time": "il y a 1 jour"
+    }
+  }
+}

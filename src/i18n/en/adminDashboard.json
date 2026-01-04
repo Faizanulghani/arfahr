@@ -1,0 +1,122 @@
+{
+  "navigationCards": {
+    "usersManagement": {
+      "title": "Users Management",
+      "description": "Manage system users and access control"
+    },
+    "employeeManagement": {
+      "title": "Employee Management",
+      "description": "Manage employee profiles and information"
+    },
+    "shiftsManagement": {
+      "title": "Shifts Management",
+      "description": "Configure work shifts and schedules"
+    },
+    "salaryManagement": {
+      "title": "Salary Management",
+      "description": "Manage employee salary structures"
+    },
+    "attendanceTracking": {
+      "title": "Attendance Tracking",
+      "description": "Mark attendance and view records"
+    },
+    "reportsAnalytics": {
+      "title": "Reports & Analytics",
+      "description": "View comprehensive attendance reports"
+    },
+    "systemSettings": {
+      "title": "System Settings",
+      "description": "Configure system preferences"
+    }
+  },
+  "stats": {
+    "totalEmployees": "Total Employees",
+    "presentToday": "Present Today",
+    "absentToday": "Absent Today",
+    "lateArrivals": "Late Arrivals"
+  },
+  "welcome": "Welcome Back",
+  "currentTime": "Current Time",
+  "logout": "Logout",
+
+  "dashboardMetrics": {
+    "weeklyAttendance": "Weekly Attendance",
+    "productivity": "Productivity",
+    "onTimeRate": "On-Time Rate"
+  },
+  "recentActivities": {
+    "title": "Recent Activities",
+    "viewAll": "Latest attendance activities"
+  },
+  "todaySummary": {
+    "title": "Today's Summary",
+    "attendanceRate": "Attendance Rate",
+    "present": "Present",
+    "absent": "Absent"
+  },
+  "quickActions": {
+    "addEmployee": {
+      "title": "Add Employee",
+      "description": "Register new employee"
+    },
+    "markAttendance": {
+      "title": "Mark Attendance",
+      "description": "Clock in/out employees"
+    },
+    "generateReport": {
+      "title": "Generate Report",
+      "description": "Create attendance report"
+    },
+    "viewCalendar": {
+      "title": "View Calendar",
+      "description": "Check schedule"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "View detailed analytics"
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Configure system"
+    }
+  },
+  "employeeSearch": {
+    "title": "Employee Search",
+    "placeholder": "Search employees...",
+    "noResults": "No employees found"
+  },
+  "quickAttendance": {
+    "title": "Quick Attendance",
+    "absent": "Absent",
+    "checkIn": "Check In",
+    "present": "Present",
+    "checkOut": "Check Out",
+    "completed": "Completed"
+  },
+  "notifications": {
+    "lateArrivals": {
+      "title": "Late Arrivals Alert",
+      "message": "3 employees are consistently arriving late this week",
+      "action": "View Details",
+      "time": "2 hours ago"
+    },
+    "systemUpdate": {
+      "title": "System Update",
+      "message": "Attendance system will be updated tonight at 2 AM",
+      "action": "Learn More",
+      "time": "4 hours ago"
+    },
+    "monthlyReport": {
+      "title": "Monthly Report Ready",
+      "message": "October attendance report has been generated",
+      "action": "Download",
+      "time": "1 day ago"
+    },
+    "missingCheckOuts": {
+      "title": "Missing Check-outs",
+      "message": "2 employees forgot to check out yesterday",
+      "action": "Review",
+      "time": "1 day ago"
+    }
+  }
+}

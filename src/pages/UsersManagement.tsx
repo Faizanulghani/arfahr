@@ -36,6 +36,8 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabase } from "@/lib/supabase";
 import useLogout from "@/api/useLogout";
 import AddUserModal from "@/components/AddUserModal";
+import i18n from "@/i18n/index";
+import { t } from "i18next";
 
 interface UserProfile {
   first_name: string;
@@ -74,6 +76,13 @@ const UsersManagement = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const logout = useLogout();
+  const [lang, setLang] = useState(i18n.language || "en");
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng); // this switches language at runtime
+    setLang(lng);
+    localStorage.setItem("lang", lng);
+  };
   // Authentication guard
   // useEffect(() => {
   //   if (!user) {
@@ -119,7 +128,7 @@ const UsersManagement = () => {
           profile: {
             first_name: firstName,
             last_name: lastName,
-            phone: meta.phone || "", // Check karein ke AddUserModal mein "phone" key hi use ho rahi hai
+            phone: meta.phone || "",
             address: meta.address || "",
             department: meta.department || "",
             position: meta.position || "",
@@ -171,7 +180,11 @@ const UsersManagement = () => {
   if (loading) return <p>Loading users...</p>;
 
   const handleDeleteUser = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
+    if (
+      window.confirm(
+        t("usersManagement:usersManagement.confirmDelete", { name })
+      )
+    ) {
       try {
         // 1️⃣ Delete from Auth
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(
@@ -309,16 +322,26 @@ const UsersManagement = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Users Management
+                  {t("usersManagement:usersManagement.title")}
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Manage system users and access
+                  {t("usersManagement:usersManagement.description")}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <select
+                  value={lang}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className="border rounded px-2 py-1 bg-white"
+                >
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
               <Button onClick={() => navigate("/dashboard")} variant="outline">
-                Dashboard
+                {t("usersManagement:usersManagement.dashboard")}
               </Button>
               <Button
                 variant="outline"
@@ -326,7 +349,7 @@ const UsersManagement = () => {
                 className="flex items-center space-x-2"
               >
                 <LogOut className="h-4 w-4" />
-                <span>Logout</span>
+                <span>{t("usersManagement:usersManagement.logout")}</span>
               </Button>
             </div>
           </div>
@@ -340,7 +363,9 @@ const UsersManagement = () => {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search users by name, email, or employee ID..."
+                placeholder={t(
+                  "usersManagement:usersManagement.searchPlaceholder"
+                )}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -379,7 +404,7 @@ const UsersManagement = () => {
               className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Add User
+              {t("usersManagement:usersManagement.addUser")}
             </Button>
           </div>
         </div>
@@ -420,7 +445,7 @@ const UsersManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Total Users
+                    {t("usersManagement:usersManagement.totalUsers")}
                   </p>
                   <p className="text-3xl font-bold">{users.length}</p>
                 </div>
@@ -433,7 +458,7 @@ const UsersManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Active Users
+                    {t("usersManagement:usersManagement.activeUsers")}
                   </p>
                   <p className="text-3xl font-bold text-green-600">
                     {users.filter((u) => u.is_active).length}
@@ -447,7 +472,9 @@ const UsersManagement = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Admins</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {t("usersManagement:usersManagement.admins")}
+                  </p>
                   <p className="text-3xl font-bold text-red-600">
                     {users.filter((u) => u.role === "admin").length}
                   </p>
@@ -460,7 +487,9 @@ const UsersManagement = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Inactive</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {t("usersManagement:usersManagement.inactive")}
+                  </p>
                   <p className="text-3xl font-bold text-orange-600">
                     {users.filter((u) => !u.is_active).length}
                   </p>
@@ -476,10 +505,13 @@ const UsersManagement = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Users className="h-5 w-5" />
-              <span>System Users</span>
+              <span>{t("usersManagement:usersManagement.systemUsers")}</span>
             </CardTitle>
             <CardDescription>
-              Showing {filteredUsers.length} of {users.length} users
+              {t("usersManagement:usersManagement.showingUsers", {
+                filtered: filteredUsers.length,
+                total: users.length,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -487,13 +519,27 @@ const UsersManagement = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Hire Date</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>
+                      {t("usersManagement:usersManagement.employee")}
+                    </TableHead>
+                    <TableHead>
+                      {t("usersManagement:usersManagement.contact")}
+                    </TableHead>
+                    <TableHead>
+                      {t("usersManagement:usersManagement.role")}
+                    </TableHead>
+                    <TableHead>
+                      {t("usersManagement:usersManagement.userdepartment")}
+                    </TableHead>
+                    <TableHead>
+                      {t("usersManagement:usersManagement.status")}
+                    </TableHead>
+                    <TableHead>
+                      {t("usersManagement:usersManagement.hireDate")}
+                    </TableHead>
+                    <TableHead>
+                      {t("usersManagement:usersManagement.actions")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -507,7 +553,7 @@ const UsersManagement = () => {
                           </div>
                           <div>
                             <p className="font-semibold">
-                              {userItem.profile.first_name}{" "}
+                              {userItem.profile.first_name}
                               {userItem.profile.last_name}
                             </p>
                             <p className="text-sm text-gray-500">
@@ -625,58 +671,77 @@ const UsersManagement = () => {
                 ✕
               </button>
               <h2 className="text-xl font-semibold mb-4 border-b pb-2">
-                User Details
+                {t("usersManagement:usersManagement.userDetails")}
               </h2>
 
               <div className="space-y-2 text-sm">
                 <p>
-                  <strong>Name:</strong> {selectedUser.profile.first_name}{" "}
+                  <strong>{t("usersManagement:usersManagement.name")}</strong>
+                  {selectedUser.profile.first_name}
                   {selectedUser.profile.last_name}
                 </p>
                 <p>
-                  <strong>Email:</strong> {selectedUser.email}
+                  <strong>{t("usersManagement:usersManagement.email")}</strong>
+                  {selectedUser.email}
                 </p>
                 <p>
-                  <strong>Employee ID:</strong>{" "}
+                  <strong>
+                    {t("usersManagement:usersManagement.employeeId")}
+                  </strong>
                   {selectedUser.profile.employee_id}
                 </p>
                 <p>
-                  <strong>Department:</strong>{" "}
+                  <strong>
+                    {t("usersManagement:usersManagement.department")}
+                  </strong>
                   {selectedUser.profile.department || "—"}
                 </p>
                 <p>
-                  <strong>Position:</strong>{" "}
+                  <strong>
+                    {t("usersManagement:usersManagement.position")}
+                  </strong>
                   {selectedUser.profile.position || "—"}
                 </p>
                 <p>
-                  <strong>Salary:</strong> {selectedUser.profile.salary || "—"}
+                  <strong>{t("usersManagement:usersManagement.salary")}</strong>
+                  {selectedUser.profile.salary || "—"}
                 </p>
                 <p>
-                  <strong>Phone:</strong> {selectedUser.profile.phone || "—"}
+                  <strong>{t("usersManagement:usersManagement.phone")}</strong>
+                  {selectedUser.profile.phone || "—"}
                 </p>
                 <p>
-                  <strong>Emergency Contact:</strong>{" "}
+                  <strong>
+                    {t("usersManagement:usersManagement.emergencyContact")}
+                  </strong>
                   {selectedUser.profile.emergency_contact || "—"}
                 </p>
                 <p>
-                  <strong>Emergency Phone:</strong>{" "}
+                  <strong>
+                    {t("usersManagement:usersManagement.emergencyPhone")}
+                  </strong>
                   {selectedUser.profile.emergency_phone || "—"}
                 </p>
                 <p>
-                  <strong>Address:</strong>{" "}
+                  <strong>
+                    {t("usersManagement:usersManagement.address")}
+                  </strong>
                   {selectedUser.profile.address || "—"}
                 </p>
                 <p>
-                  <strong>Hire Date:</strong>{" "}
+                  <strong>
+                    {t("usersManagement:usersManagement.hireDate")}
+                  </strong>
                   {new Date(
                     selectedUser.profile.hire_date
                   ).toLocaleDateString()}
                 </p>
                 <p>
-                  <strong>Role:</strong> {selectedUser.role}
+                  <strong>{t("usersManagement:usersManagement.role")}</strong>
+                  {selectedUser.role}
                 </p>
                 <p>
-                  <strong>Status:</strong>{" "}
+                  <strong>{t("usersManagement:usersManagement.status")}</strong>
                   <span
                     className={
                       selectedUser.is_active ? "text-green-600" : "text-red-600"

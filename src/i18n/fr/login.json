@@ -1,0 +1,14 @@
+{
+  "loginTitle": "Connexion",
+  "loginDescription": "Accédez à votre compte",
+  "emailLabel": "Email",
+  "passwordLabel": "Mot de passe",
+  "noAccount": "Vous n'avez pas de compte ?",
+  "signup": "Inscription",
+  "error": "Erreur",
+  "descriptionErr": "Rôle utilisateur introuvable. Veuillez contacter l'administrateur.",
+  "failed": "Échec de la connexion",
+  "invalid": "Identifiants invalides",
+  "title": "Connexion réussie",
+  "description": "Redirection vers le tableau de bord {{role}}..."
+}

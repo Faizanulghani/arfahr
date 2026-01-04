@@ -1,0 +1,49 @@
+{
+  "cardTitle": "Create Employee Account",
+  "cardDescription": "Fill the form to register a new account",
+  "labels": {
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "password": "Password",
+    "phone": "Phone",
+    "address": "Address",
+    "position": "Position",
+    "department": "Department",
+    "salary": "Salary",
+    "joiningDate": "Joining Date",
+    "employmentType": "Employment Type",
+    "emergencyContact": "Emergency Contact",
+    "emergencyPhone": "Emergency Phone",
+    "role": "Choose Role",
+    "terms": "I agree to the terms and conditions",
+    "biometric": "BIOMETRIC VERIFICATION"
+  },
+  "roles": {
+    "admin": "Admin",
+    "manager": "Manager",
+    "employee": "Employee"
+  },
+  "biometric": {
+    "captureFinger": "Capture Finger {{count}}",
+    "scanningFinger": "Scanning Finger {{count}}...",
+    "limitReached": "Limit Reached (10/10)"
+  },
+  "submit": {
+    "creating": "Creating Account...",
+    "scanFirst": "Scan Fingerprint to Continue",
+    "signUpFingers": "Sign Up with {{count}} Fingers"
+  },
+  "fingersIncomplete": {
+    "title": "Fingers Incomplete",
+    "description": "Please scan at least 5 fingers. You have only scanned {{count}}."
+  },
+  "fingerprintRequired": {
+    "title": "Fingerprint Required",
+    "description": "Please scan your fingerprints before signing up."
+  },
+  "accountCreated": {
+    "title": "Account Created",
+    "description": "Employee profile created successfully."
+  }
+}

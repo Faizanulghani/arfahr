@@ -13,6 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { useAdmin } from "@/contexts/LaravelAdminContext";
+import { t } from "i18next";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -39,8 +40,8 @@ const Login = () => {
 
     if (error || !data.session) {
       toast({
-        title: "Login Failed",
-        description: error?.message || "Invalid credentials",
+        title: t("login:failed"),
+        description: error?.message || t("login:invalid"),
         variant: "destructive",
       });
       setLoading(false);
@@ -56,8 +57,8 @@ const Login = () => {
 
     if (roleError || !roleData) {
       toast({
-        title: "Error",
-        description: "User role not found. Please contact admin.",
+        title: t("login:error"),
+        description: t("login:descriptionErr"),
         variant: "destructive",
       });
       setLoading(false);
@@ -68,8 +69,8 @@ const Login = () => {
 
     // 3️⃣ Success & redirect
     toast({
-      title: "Login Successful",
-      description: `Redirecting to ${roleData.role} dashboard...`,
+      title: t("login:title"),
+      description: t("login:description", { role: roleData.role }),
     });
 
     setTimeout(() => {
@@ -86,13 +87,13 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Access your account</CardDescription>
+          <CardTitle className="text-2xl">{t("login:loginTitle")}</CardTitle>
+          <CardDescription>{t("login:loginDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("login:emailLabel")}</Label>
               <Input
                 type="email"
                 name="email"
@@ -105,7 +106,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("login:passwordLabel")}</Label>
               <Input
                 type="password"
                 name="password"
@@ -122,12 +123,12 @@ const Login = () => {
             </Button>
 
             <div className="text-center text-sm text-gray-600 mt-2">
-              Don’t have an account?{" "}
+              {t("login:noAccount")}
               <span
                 onClick={() => navigate("/signup")}
                 className="text-blue-600 hover:underline cursor-pointer"
               >
-                Signup
+                {t("login:signup")}
               </span>
             </div>
           </form>

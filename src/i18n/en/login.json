@@ -1,0 +1,14 @@
+{
+  "loginTitle": "Login",
+  "loginDescription": "Access your account",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "noAccount": "Don’t have an account?",
+  "signup": "Signup",
+  "error": "Error",
+  "descriptionErr": "User role not found. Please contact admin.",
+  "failed": "Login Failed",
+  "invalid": "Invalid credentials",
+  "title": "Login Successful",
+  "description": "Redirecting to {{role}} dashboard..."
+}

@@ -15,10 +15,12 @@ import { toast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Fingerprint } from "lucide-react";
 import { nanoid } from "nanoid";
+import { useTranslation } from "react-i18next";
 
 const Signup = () => {
   const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { t } = useTranslation("employee");
 
   const [loading, setLoading] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
@@ -103,8 +105,10 @@ const Signup = () => {
 
     if (allBiometricData.length < 5) {
       toast({
-        title: "Fingers Incomplete",
-        description: `Please scan at least 5 fingers. You have only scanned ${allBiometricData.length}.`,
+        title: t("register:fingersIncomplete.title"),
+        description: t("register:fingersIncomplete.description", {
+          count: allBiometricData.length,
+        }),
         variant: "destructive",
       });
       return;
@@ -112,8 +116,8 @@ const Signup = () => {
 
     if (allBiometricData.length === 0) {
       toast({
-        title: "Fingerprint Required",
-        description: "Please scan your fingerprints before signing up.",
+        title: t("register:fingerprintRequired.title"),
+        description: t("register:fingerprintRequired.description"),
         variant: "destructive",
       });
       return;
@@ -179,7 +183,6 @@ const Signup = () => {
       .insert([employeeData]);
 
     if (empInsertError) {
-      console.error("DB Error:", empInsertError);
       toast({
         title: "Database Error",
         description: empInsertError.message,
@@ -190,8 +193,8 @@ const Signup = () => {
     }
 
     toast({
-      title: "Account Created",
-      description: "Employee profile created successfully.",
+      title: t("register:accountCreated.title"),
+      description: t("register:accountCreated.description"),
     });
 
     navigate("/login");
@@ -202,15 +205,15 @@ const Signup = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
       <Card className="w-full max-w-2xl shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Create Employee Account</CardTitle>
-          <CardDescription>
-            Fill the form to register a new account
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("register:cardTitle")}</CardTitle>
+          <CardDescription>{t("register:cardDescription")}</CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+            {/* First Name */}
             <div className="space-y-2 col-span-1">
-              <Label>First Name</Label>
+              <Label>{t("register:labels.firstName")}</Label>
               <Input
                 name="first_name"
                 value={formData.first_name}
@@ -218,8 +221,10 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Last Name */}
             <div className="space-y-2 col-span-1">
-              <Label>Last Name</Label>
+              <Label>{t("register:labels.lastName")}</Label>
               <Input
                 name="last_name"
                 value={formData.last_name}
@@ -227,8 +232,10 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Email */}
             <div className="space-y-2 col-span-2">
-              <Label>Email</Label>
+              <Label>{t("register:labels.email")}</Label>
               <Input
                 type="email"
                 name="email"
@@ -237,8 +244,10 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Password */}
             <div className="space-y-2 col-span-1">
-              <Label>Password</Label>
+              <Label>{t("register:labels.password")}</Label>
               <Input
                 type="password"
                 name="password"
@@ -247,8 +256,10 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Phone */}
             <div className="space-y-2 col-span-1">
-              <Label>Phone</Label>
+              <Label>{t("register:labels.phone")}</Label>
               <Input
                 name="phone"
                 value={formData.phone}
@@ -256,16 +267,20 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Address */}
             <div className="space-y-2 col-span-2">
-              <Label>Address</Label>
+              <Label>{t("register:labels.address")}</Label>
               <Input
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
               />
             </div>
+
+            {/* Position */}
             <div className="space-y-2 col-span-1">
-              <Label>Position</Label>
+              <Label>{t("register:labels.position")}</Label>
               <Input
                 name="position"
                 value={formData.position}
@@ -273,8 +288,10 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Department */}
             <div className="space-y-2 col-span-1">
-              <Label>Department</Label>
+              <Label>{t("register:labels.department")}</Label>
               <Input
                 name="department"
                 value={formData.department}
@@ -282,8 +299,10 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Salary */}
             <div className="space-y-2 col-span-1">
-              <Label>Salary</Label>
+              <Label>{t("register:labels.salary")}</Label>
               <Input
                 type="number"
                 name="salary"
@@ -291,8 +310,10 @@ const Signup = () => {
                 onChange={handleChange}
               />
             </div>
+
+            {/* Joining Date */}
             <div className="space-y-2 col-span-1">
-              <Label>Joining Date</Label>
+              <Label>{t("register:labels.joiningDate")}</Label>
               <Input
                 type="date"
                 name="joining_date"
@@ -301,8 +322,10 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Employment Type */}
             <div className="space-y-2 col-span-1">
-              <Label>Employment Type</Label>
+              <Label>{t("register:labels.employmentType")}</Label>
               <Input
                 name="employment_type"
                 value={formData.employment_type}
@@ -310,16 +333,20 @@ const Signup = () => {
                 required
               />
             </div>
+
+            {/* Emergency Contact */}
             <div className="space-y-2 col-span-1">
-              <Label>Emergency Contact</Label>
+              <Label>{t("register:labels.emergencyContact")}</Label>
               <Input
                 name="emergency_contact"
                 value={formData.emergency_contact}
                 onChange={handleChange}
               />
             </div>
+
+            {/* Emergency Phone */}
             <div className="space-y-2 col-span-1">
-              <Label>Emergency Phone</Label>
+              <Label>{t("register:labels.emergencyPhone")}</Label>
               <Input
                 name="emergency_phone"
                 value={formData.emergency_phone}
@@ -327,9 +354,9 @@ const Signup = () => {
               />
             </div>
 
-            {/* ✅ Role Selection */}
+            {/* Role Selection */}
             <div className="space-y-2 col-span-2">
-              <Label>Choose Role</Label>
+              <Label>{t("register:labels.role")}</Label>
               <RadioGroup
                 value={formData.role}
                 onValueChange={(val) =>
@@ -337,21 +364,16 @@ const Signup = () => {
                 }
                 className="flex gap-4"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="admin" id="admin" />
-                  <Label htmlFor="admin">Admin</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="manager" id="manager" />
-                  <Label htmlFor="manager">Manager</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="employee" id="employee" />
-                  <Label htmlFor="employee">Employee</Label>
-                </div>
+                {["admin", "manager", "employee"].map((role) => (
+                  <div key={role} className="flex items-center space-x-2">
+                    <RadioGroupItem value={role} id={role} />
+                    <Label htmlFor={role}>{t(`register:roles.${role}`)}</Label>
+                  </div>
+                ))}
               </RadioGroup>
             </div>
 
+            {/* Terms */}
             <div className="flex items-center gap-2 col-span-2">
               <input
                 type="checkbox"
@@ -360,55 +382,51 @@ const Signup = () => {
                 onChange={handleChange}
                 required
               />
-              <Label>I agree to the terms and conditions</Label>
+              <Label>{t("register:labels.terms")}</Label>
             </div>
+
+            {/* Biometric Section */}
             <div className="col-span-2 space-y-6 p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
               <div className="flex justify-between items-center">
                 <Label className="text-blue-600 font-bold flex items-center gap-2">
                   <Fingerprint className="h-5 w-5" />
-                  BIOMETRIC VERIFICATION
+                  {t("register:labels.biometric")}
                 </Label>
                 <span className="text-sm font-mono font-bold text-blue-500">
                   {capturedCount}/10 Done
                 </span>
               </div>
 
-              {/* Progress Container */}
+              {/* Progress bar and nodes */}
               <div className="relative flex items-center justify-between px-2 h-20">
                 <div className="absolute top-[28px] left-0 w-full h-[2px] bg-slate-100 z-0" />
-
-                {/* 🟢 Active Green Progress Line */}
                 <div
                   className="absolute top-[28px] left-0 h-[2px] bg-green-500 z-0 transition-all duration-700 ease-in-out"
                   style={{
                     width: `${(Math.max(0, capturedCount - 1) / 9) * 100}%`,
                   }}
                 />
-
                 {[...Array(10)].map((_, index) => {
                   const isCaptured = index < capturedCount;
                   const isCurrent = index === capturedCount;
                   const isScanning = isCurrent && biometricLoading;
-
                   return (
                     <div
                       key={index}
                       className="relative z-10 flex flex-col items-center"
                     >
-                      {/* Node Circle */}
                       <div
                         className={`
-              w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white
-              ${
-                isCaptured
-                  ? "border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]"
-                  : isScanning
-                  ? "border-blue-500 animate-bounce shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-                  : "border-slate-200 text-slate-300"
-              }
-            `}
+                      w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white
+                      ${
+                        isCaptured
+                          ? "border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                          : isScanning
+                          ? "border-blue-500 animate-bounce shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                          : "border-slate-200 text-slate-300"
+                      }
+                    `}
                       >
-                        {" "}
                         <Fingerprint
                           className={`h-5 w-5 transition-colors duration-500 ${
                             isCaptured
@@ -418,12 +436,10 @@ const Signup = () => {
                               : "inherit"
                           }`}
                         />
-                        {/* Scanning Radar Effect */}
                         {isScanning && (
                           <div className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping" />
                         )}
                       </div>
-
                       <span
                         className={`text-[9px] mt-2 font-black transition-colors ${
                           isCaptured ? "text-green-600" : "text-slate-400"
@@ -452,59 +468,57 @@ const Signup = () => {
                     <>
                       <Fingerprint className="h-5 w-5" />
                       <span className="font-bold tracking-tight">
-                        Limit Reached (10/10)
+                        {t("register:biometric.limitReached")}
                       </span>
                     </>
                   ) : biometricLoading ? (
                     <>
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Scanning Finger {capturedCount + 1}...</span>
+                      <span>
+                        {t("register:biometric.scanningFinger", {
+                          count: capturedCount + 1,
+                        })}
+                      </span>
                     </>
                   ) : (
                     <>
                       <Fingerprint className="h-5 w-5 group-hover:rotate-12 transition-transform" />
                       <span className="font-bold tracking-tight">
-                        Capture Finger {capturedCount + 1}
+                        {t("register:biometric.captureFinger", {
+                          count: capturedCount + 1,
+                        })}
                       </span>
                     </>
                   )}
                 </div>
               </Button>
             </div>
+
+            {/* Submit Button */}
             <div className="col-span-2 pt-4">
               <Button
                 type="submit"
                 disabled={loading || allBiometricData.length === 0}
-                className={`w-full h-12 text-base font-bold transition-all duration-300 shadow-sm
-      ${
-        allBiometricData.length > 0
-          ? "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-blue-200 hover:shadow-lg active:scale-[0.98]"
-          : "bg-slate-100 text-slate-400"
-      }`}
+                className={`w-full h-12 text-base font-bold transition-all duration-300 shadow-sm ${
+                  allBiometricData.length > 0
+                    ? "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-blue-200 hover:shadow-lg active:scale-[0.98]"
+                    : "bg-slate-100 text-slate-400"
+                }`}
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Creating Account...</span>
+                    <span>{t("register:submit.creating")}</span>
                   </div>
                 ) : allBiometricData.length === 0 ? (
-                  "Scan Fingerprint to Continue"
+                  t("register:submit.scanFirst")
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span>Sign Up with {allBiometricData.length} Fingers</span>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
+                    <span>
+                      {t("register:submit.signUpFingers", {
+                        count: allBiometricData.length,
+                      })}
+                    </span>
                   </div>
                 )}
               </Button>

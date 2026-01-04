@@ -1,0 +1,28 @@
+{
+  "features": {
+    "biometricAuthentication": {
+      "title": "Biometric Authentication",
+      "description": "Secure fingerprint-based attendance with DigitalPersona integration"
+    },
+    "realTimeTracking": {
+      "title": "Real-time Tracking",
+      "description": "Live attendance monitoring and automatic punch in/out logging"
+    },
+    "analyticsReports": {
+      "title": "Analytics & Reports",
+      "description": "Comprehensive attendance reports and data export capabilities"
+    },
+    "employeeManagement": {
+      "title": "Employee Management",
+      "description": "Complete employee database with shift scheduling and management"
+    },
+    "roleBasedAccess": {
+      "title": "Role-based Access",
+      "description": "Multi-level access control for employees, managers, and admins"
+    },
+    "shiftManagement": {
+      "title": "Shift Management",
+      "description": "Flexible shift scheduling with overtime tracking and alerts"
+    }
+  }
+}

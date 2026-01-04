@@ -1,61 +1,62 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { 
-  UserPlus, 
-  Clock, 
-  FileText, 
+import {
+  UserPlus,
+  Clock,
+  FileText,
   Calendar,
   Settings,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
+import { t } from "i18next";
 
 const QuickActions = () => {
   const navigate = useNavigate();
 
   const quickActions = [
     {
-      title: "Add Employee",
-      description: "Register new employee",
+      title: t("adminDashboard:quickActions.addEmployee.title"),
+      description: t("adminDashboard:quickActions.addEmployee.description"),
       icon: UserPlus,
       color: "bg-blue-500 hover:bg-blue-600",
-      action: () => navigate("/employee-registration")
+      action: () => navigate("/employee-registration"),
     },
     {
-      title: "Mark Attendance",
-      description: "Clock in/out employees",
+      title: t("adminDashboard:quickActions.markAttendance.title"),
+      description: t("adminDashboard:quickActions.markAttendance.description"),
       icon: Clock,
       color: "bg-green-500 hover:bg-green-600",
-      action: () => navigate("/attendance")
+      action: () => navigate("/attendance"),
     },
     {
-      title: "Generate Report",
-      description: "Create attendance report",
+      title: t("adminDashboard:quickActions.generateReport.title"),
+      description: t("adminDashboard:quickActions.generateReport.description"),
       icon: FileText,
       color: "bg-purple-500 hover:bg-purple-600",
-      action: () => navigate("/reports")
+      action: () => navigate("/reports"),
     },
     {
-      title: "View Calendar",
-      description: "Check schedule",
+      title: t("adminDashboard:quickActions.viewCalendar.title"),
+      description: t("adminDashboard:quickActions.viewCalendar.description"),
       icon: Calendar,
       color: "bg-orange-500 hover:bg-orange-600",
-      action: () => alert("Calendar feature coming soon!")
+      action: () => alert("Calendar feature coming soon!"),
     },
     {
-      title: "Analytics",
-      description: "View detailed analytics",
+      title: t("adminDashboard:quickActions.analytics.title"),
+      description: t("adminDashboard:quickActions.analytics.description"),
       icon: BarChart3,
       color: "bg-indigo-500 hover:bg-indigo-600",
-      action: () => alert("Analytics feature coming soon!")
+      action: () => alert("Analytics feature coming soon!"),
     },
     {
-      title: "Settings",
-      description: "Configure system",
+      title: t("adminDashboard:quickActions.settings.title"),
+      description: t("adminDashboard:quickActions.settings.description"),
       icon: Settings,
       color: "bg-gray-500 hover:bg-gray-600",
-      action: () => navigate("/settings")
-    }
+      action: () => navigate("/settings"),
+    },
   ];
 
   return (

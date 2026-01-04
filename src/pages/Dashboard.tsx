@@ -33,6 +33,8 @@ import LiveClock from "@/components/LiveClock";
 import AttendanceWidget from "@/components/AttendanceWidget";
 import DashboardNotifications from "@/components/DashboardNotifications";
 import useLogout from "@/api/useLogout";
+import i18n from "@/i18n/index";
+import { t } from "i18next";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -42,6 +44,13 @@ const Dashboard = () => {
   const [employees, setEmployees] = useState<any[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [lang, setLang] = useState(i18n.language || "en");
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng); // this switches language at runtime
+    setLang(lng);
+    localStorage.setItem("lang", lng);
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -89,7 +98,7 @@ const Dashboard = () => {
 
   const stats = [
     {
-      title: "Total Employees",
+      title: t("adminDashboard:stats.totalEmployees"),
       value: employees.length.toString(),
       change: "+12%",
       icon: Users,
@@ -97,7 +106,7 @@ const Dashboard = () => {
       bgColor: "bg-blue-50",
     },
     {
-      title: "Present Today",
+      title: t("adminDashboard:stats.presentToday"),
       value: presentCount.toString(),
       change: "+5%",
       icon: CheckCircle,
@@ -105,7 +114,7 @@ const Dashboard = () => {
       bgColor: "bg-green-50",
     },
     {
-      title: "Absent Today",
+      title: t("adminDashboard:stats.absentToday"),
       value: absentCount.toString(),
       change: "-3%",
       icon: XCircle,
@@ -113,7 +122,7 @@ const Dashboard = () => {
       bgColor: "bg-red-50",
     },
     {
-      title: "Late Arrivals",
+      title: t("adminDashboard:stats.lateArrivals"),
       value: lateCount.toString(),
       change: "-8%",
       icon: Clock,
@@ -158,57 +167,64 @@ const Dashboard = () => {
 
   const navigationCards = [
     {
-      title: "Users Management",
-      description: "Manage system users and access control",
+      title: t("adminDashboard:navigationCards.usersManagement.title"),
+      description: t(
+        "adminDashboard:navigationCards.usersManagement.description"
+      ),
       icon: Users,
       path: "/users-management",
       color: "from-blue-600 to-blue-700",
     },
     {
-      title: "Employee Management",
-      description: "Manage employee profiles and information",
+      title: t("adminDashboard:navigationCards.employeeManagement.title"),
+      description: t(
+        "adminDashboard:navigationCards.employeeManagement.description"
+      ),
       icon: UserCheck,
       path: "/employee-management",
       color: "from-green-600 to-green-700",
     },
     {
-      title: "Shifts Management",
-      description: "Configure work shifts and schedules",
+      title: t("adminDashboard:navigationCards.shiftsManagement.title"),
+      description: t(
+        "adminDashboard:navigationCards.shiftsManagement.description"
+      ),
       icon: Clock,
       path: "/shifts-management",
       color: "from-purple-600 to-purple-700",
     },
     {
-      title: "Salary Management",
-      description: "Manage employee salary structures",
+      title: t("adminDashboard:navigationCards.salaryManagement.title"),
+      description: t(
+        "adminDashboard:navigationCards.salaryManagement.description"
+      ),
       icon: DollarSign,
       path: "/salary-management",
       color: "from-emerald-600 to-emerald-700",
     },
-    // {
-    //   title: "Payroll Management",
-    //   description: "Process and manage employee payroll",
-    //   icon: Receipt,
-    //   path: "/payroll-management",
-    //   color: "from-orange-600 to-orange-700"
-    // },
     {
-      title: "Attendance Tracking",
-      description: "Mark attendance and view records",
+      title: t("adminDashboard:navigationCards.attendanceTracking.title"),
+      description: t(
+        "adminDashboard:navigationCards.attendanceTracking.description"
+      ),
       icon: Fingerprint,
       path: "/attendance",
       color: "from-red-600 to-red-700",
     },
     {
-      title: "Reports & Analytics",
-      description: "View comprehensive attendance reports",
+      title: t("adminDashboard:navigationCards.reportsAnalytics.title"),
+      description: t(
+        "adminDashboard:navigationCards.reportsAnalytics.description"
+      ),
       icon: BarChart3,
       path: "/reports",
       color: "from-indigo-600 to-indigo-700",
     },
     {
-      title: "System Settings",
-      description: "Configure system preferences",
+      title: t("adminDashboard:navigationCards.systemSettings.title"),
+      description: t(
+        "adminDashboard:navigationCards.systemSettings.description"
+      ),
       icon: Settings,
       path: "/settings",
       color: "from-gray-600 to-gray-700",
@@ -230,13 +246,26 @@ const Dashboard = () => {
                   AfraExpress Dashboard
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Welcome back, {user.first_name} {user.last_name}!
+                  {t("adminDashboard:welcome")}, {user.first_name}{" "}
+                  {user.last_name}!
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <select
+                  value={lang}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className="border rounded px-2 py-1 bg-white"
+                >
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">Current Time</p>
+                <p className="text-sm text-gray-600">
+                  {t("adminDashboard:currentTime")}
+                </p>
                 <p className="font-semibold">
                   {currentTime.toLocaleTimeString()}
                 </p>
@@ -247,7 +276,7 @@ const Dashboard = () => {
                 className="flex items-center space-x-2"
               >
                 <LogOut className="h-4 w-4" />
-                <span>Logout</span>
+                <span>{t("adminDashboard:logout")}</span>
               </Button>
             </div>
           </div>
@@ -290,7 +319,7 @@ const Dashboard = () => {
                       {weeklyStats.avgAttendance}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Weekly Attendance
+                      {t("adminDashboard:dashboardMetrics.weeklyAttendance")}
                     </div>
                     <div className="flex items-center justify-center mt-1">
                       <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
@@ -301,7 +330,9 @@ const Dashboard = () => {
                     <div className="text-2xl font-bold text-blue-600">
                       {weeklyStats.productivity}
                     </div>
-                    <div className="text-sm text-gray-600">Productivity</div>
+                    <div className="text-sm text-gray-600">
+                      {t("adminDashboard:dashboardMetrics.productivity")}
+                    </div>
                     <div className="flex items-center justify-center mt-1">
                       <Activity className="h-4 w-4 text-blue-600 mr-1" />
                       <span className="text-xs text-blue-600">+5.1%</span>
@@ -311,7 +342,9 @@ const Dashboard = () => {
                     <div className="text-2xl font-bold text-purple-600">
                       {weeklyStats.onTimeRate}
                     </div>
-                    <div className="text-sm text-gray-600">On-Time Rate</div>
+                    <div className="text-sm text-gray-600">
+                      {t("adminDashboard:dashboardMetrics.onTimeRate")}
+                    </div>
                     <div className="flex items-center justify-center mt-1">
                       <CheckCircle className="h-4 w-4 text-purple-600 mr-1" />
                       <span className="text-xs text-purple-600">+1.8%</span>
@@ -378,9 +411,11 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <BarChart3 className="h-5 w-5" />
-                <span>Recent Activities</span>
+                <span>{t("adminDashboard:recentActivities.title")}</span>
               </CardTitle>
-              <CardDescription>Latest attendance activities</CardDescription>
+              <CardDescription>
+                {t("adminDashboard:recentActivities.viewAll")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -422,7 +457,7 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5" />
-                <span>Today's Summary</span>
+                <span>{t("adminDashboard:todaySummary.title")}</span>
               </CardTitle>
               <CardDescription>
                 {new Date().toLocaleDateString("en-US", {
@@ -436,7 +471,9 @@ const Dashboard = () => {
             <CardContent>
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Attendance Rate</span>
+                  <span className="text-gray-600">
+                    {t("adminDashboard:todaySummary.attendanceRate")}
+                  </span>
                   <span className="text-2xl font-bold text-green-600">
                     {attendanceRate}%
                   </span>
@@ -452,13 +489,17 @@ const Dashboard = () => {
                     <p className="text-2xl font-bold text-green-600">
                       {presentCount}
                     </p>
-                    <p className="text-sm text-gray-600">Present</p>
+                    <p className="text-sm text-gray-600">
+                      {t("adminDashboard:todaySummary.present")}
+                    </p>
                   </div>
                   <div className="text-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
                     <p className="text-2xl font-bold text-red-600">
                       {absentCount}
                     </p>
-                    <p className="text-sm text-gray-600">Absent</p>
+                    <p className="text-sm text-gray-600">
+                      {t("adminDashboard:todaySummary.absent")}
+                    </p>
                   </div>
                 </div>
               </div>

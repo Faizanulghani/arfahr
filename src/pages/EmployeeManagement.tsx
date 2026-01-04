@@ -24,12 +24,21 @@ import {
   Filter,
 } from "lucide-react";
 import useLogout from "@/api/useLogout";
+import i18n from "@/i18n/index";
 
 const EmployeeManagement = () => {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("all");
+  const [lang, setLang] = useState(i18n.language || "en");
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng); // this switches language at runtime
+    setLang(lng);
+    localStorage.setItem("lang", lng);
+  };
+
   const logout = useLogout();
 
   const fetchEmployees = async () => {
@@ -101,6 +110,16 @@ const EmployeeManagement = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <select
+                  value={lang}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className="border rounded px-2 py-1 bg-white"
+                >
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
               <Button onClick={() => navigate("/dashboard")} variant="outline">
                 Dashboard
               </Button>

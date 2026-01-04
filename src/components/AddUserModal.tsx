@@ -16,6 +16,7 @@ import { Fingerprint } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { nanoid } from "nanoid";
 import { cn } from "@/lib/utils";
+import { t } from "i18next";
 
 const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -87,10 +88,10 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
         }
 
         toast({
-          title: "Finger Captured",
-          description: `Fingerprint ${
-            biometricCaptured + 1
-          } registered successfully.`,
+          title: t("usersManagement:toast.fingerCaptured"),
+          description: t("usersManagement:toast.fingerCapturedDesc", {
+            count: biometricCaptured + 1,
+          }),
         });
 
         setBiometricLoading(false);
@@ -186,7 +187,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
 
       if (updateError) {
         toast({
-          title: "Update Failed",
+          title: t("usersManagement:toast.updateFailed"),
           description: updateError.message,
           variant: "destructive",
         });
@@ -195,8 +196,8 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
       }
 
       toast({
-        title: "User Updated",
-        description: "The user information has been updated successfully.",
+        title: t("usersManagement:toast.userUpdated"),
+        description: t("usersManagement:usersManagement.userUpdatedDesc"),
       });
       onUserAdded(); // Refresh list
       onClose();
@@ -207,8 +208,8 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
     // ✅ ADD NEW USER
     if (!password) {
       toast({
-        title: "Missing Password",
-        description: "Please enter a password for the new user.",
+        title: t("usersManagement:toast.missingPassword"),
+        description: t("usersManagement:toast.missingPasswordDesc"),
         variant: "destructive",
       });
       setLoading(false);
@@ -241,7 +242,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
 
     if (authError || !authData.user) {
       toast({
-        title: "Add User Failed",
+        title: t("usersManagement:toast.addUserFailed"),
         description: authError?.message || "Something went wrong",
         variant: "destructive",
       });
@@ -276,7 +277,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
 
     if (empInsertError) {
       toast({
-        title: "Add User Error",
+        title: t("usersManagement:toast.addUserError"),
         description: empInsertError.message,
         variant: "destructive",
       });
@@ -285,8 +286,8 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
     }
 
     toast({
-      title: "User Added",
-      description: "The user has been added successfully.",
+      title: t("usersManagement:toast.userAdded"),
+      description: t("usersManagement:toast.userAddedDesc"),
     });
     onUserAdded();
     onClose();
@@ -302,14 +303,14 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
           </CardTitle>
           <CardDescription>
             {selectedUser
-              ? "Update employee details below."
-              : "Fill the form to add a new employee."}
+              ? t("usersManagement:form.updateEmployeeTitle")
+              : t("usersManagement:form.addEmployeeTitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-1">
-              <Label>First Name</Label>
+              <Label>{t("usersManagement:form.firstName")}</Label>
               <Input
                 name="first_name"
                 value={formData.first_name}
@@ -318,7 +319,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
               />
             </div>
             <div className="space-y-2 col-span-1">
-              <Label>Last Name</Label>
+              <Label>{t("usersManagement:form.lastName")}</Label>
               <Input
                 name="last_name"
                 value={formData.last_name}
@@ -339,7 +340,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
 
             {!selectedUser && (
               <div className="space-y-2 col-span-1">
-                <Label>Password</Label>
+                <Label>{t("usersManagement:auth.password")}</Label>
                 <Input
                   type="password"
                   name="password"
@@ -351,7 +352,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             )}
 
             <div className="space-y-2 col-span-1">
-              <Label>Phone</Label>
+              <Label>{t("usersManagement:form.phone")}</Label>
               <Input
                 name="phone"
                 value={formData.phone}
@@ -361,7 +362,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-2">
-              <Label>Address</Label>
+              <Label>{t("usersManagement:form.address")}</Label>
               <Input
                 name="address"
                 value={formData.address}
@@ -370,7 +371,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>Position</Label>
+              <Label>{t("usersManagement:form.position")}</Label>
               <Input
                 name="position"
                 value={formData.position}
@@ -380,7 +381,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>Department</Label>
+              <Label>{t("usersManagement:form.department")}</Label>
               <Input
                 name="department"
                 value={formData.department}
@@ -390,7 +391,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>Salary</Label>
+              <Label>{t("usersManagement:form.number")}</Label>
               <Input
                 type="number"
                 name="salary"
@@ -400,7 +401,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>Joining Date</Label>
+              <Label>{t("usersManagement:form.date")}</Label>
               <Input
                 type="date"
                 name="joining_date"
@@ -411,7 +412,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>Employment Type</Label>
+              <Label>{t("usersManagement:form.employmentType")}</Label>
               <Input
                 name="employment_type"
                 value={formData.employment_type}
@@ -420,7 +421,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>Emergency Contact</Label>
+              <Label>{t("usersManagement:form.emergencyContact")}</Label>
               <Input
                 name="emergency_contact"
                 value={formData.emergency_contact}
@@ -429,7 +430,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>Emergency Phone</Label>
+              <Label>{t("usersManagement:form.emergencyPhone")}</Label>
               <Input
                 name="emergency_phone"
                 value={formData.emergency_phone}
@@ -438,7 +439,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-2">
-              <Label>Choose Role</Label>
+              <Label>{t("usersManagement:form.chooseRole")}</Label>
               <RadioGroup
                 value={formData.role}
                 onValueChange={(val) =>
@@ -448,15 +449,21 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="admin" id="admin" />
-                  <Label htmlFor="admin">Admin</Label>
+                  <Label htmlFor="admin">
+                    {t("usersManagement:form.admin")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="manager" id="manager" />
-                  <Label htmlFor="manager">Manager</Label>
+                  <Label htmlFor="manager">
+                    {t("usersManagement:form.manager")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="employee" id="employee" />
-                  <Label htmlFor="employee">Employee</Label>
+                  <Label htmlFor="employee">
+                    {t("usersManagement:form.employee")}
+                  </Label>
                 </div>
               </RadioGroup>
             </div>
@@ -470,16 +477,14 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
                   onChange={handleChange}
                   required
                 />
-                <Label>
-                  I confirm that this user agrees to the company policy
-                </Label>
+                <Label>{t("usersManagement:form.confirmPolicy")}</Label>
               </div>
             )}
 
             {!selectedUser && (
               <div className="col-span-2 space-y-3 p-4 bg-slate-50 rounded-lg border">
                 <div className="flex justify-between text-sm font-medium">
-                  <span>Fingerprint Registration</span>
+                  <span>{t("usersManagement:biometric.registration")}</span>
                   <span
                     className={
                       biometricCaptured === 10
@@ -506,10 +511,12 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
                 >
                   <Fingerprint className="h-4 w-4" />
                   {biometricLoading
-                    ? "Waiting for Scanner..."
+                    ? t("usersManagement:biometric.waitingScanner")
                     : biometricCaptured < 10
-                    ? `Scan Finger #${biometricCaptured + 1}`
-                    : "Registration Complete ✅"}
+                    ? t("usersManagement:biometric.scanFinger", {
+                        count: biometricCaptured + 1,
+                      })
+                    : t("usersManagement:biometric.completed")}
                 </Button>
               </div>
             )}
@@ -521,10 +528,10 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
                 disabled={loading || (!selectedUser && !fingerprintId)}
               >
                 {loading
-                  ? "Processing..."
+                  ? t("usersManagement:form.processing")
                   : selectedUser
-                  ? "Update User"
-                  : "Add User"}
+                  ? t("usersManagement:form.updateUser")
+                  : t("usersManagement:users.addUser")}
               </Button>
             </div>
           </form>

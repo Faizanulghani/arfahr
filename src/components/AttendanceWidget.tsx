@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Clock, User } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import dayjs from "dayjs";
+import { t } from "i18next";
 
 const AttendanceWidget = () => {
   const [employees, setEmployees] = useState<any[]>([]);
@@ -39,10 +40,17 @@ const AttendanceWidget = () => {
     return "absent";
   };
 
-  const markAttendance = async (employeeId: string, action: "check-in" | "check-out") => {
+  const markAttendance = async (
+    employeeId: string,
+    action: "check-in" | "check-out"
+  ) => {
     if (action === "check-in") {
       await supabase.from("attendances").insert([
-        { employee_id: employeeId, check_in: new Date().toISOString(), status: "checked_in" },
+        {
+          employee_id: employeeId,
+          check_in: new Date().toISOString(),
+          status: "checked_in",
+        },
       ]);
     } else {
       const { data: latest } = await supabase
@@ -56,7 +64,8 @@ const AttendanceWidget = () => {
         .single();
 
       if (latest) {
-        const totalMs = new Date().getTime() - new Date(latest.check_in).getTime();
+        const totalMs =
+          new Date().getTime() - new Date(latest.check_in).getTime();
         const totalHours = +(totalMs / (1000 * 60 * 60)).toFixed(2);
 
         await supabase
@@ -82,7 +91,7 @@ const AttendanceWidget = () => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <User className="h-5 w-5" />
-          <span>Quick Attendance</span>
+          <span>{t("adminDashboard:quickAttendance.title")}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -90,14 +99,19 @@ const AttendanceWidget = () => {
           {employees.slice(0, 5).map((employee) => {
             const status = getEmployeeStatus(employee.id);
             return (
-              <div key={employee.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div
+                key={employee.id}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
                 <div className="flex items-center space-x-3">
                   <div className="bg-gray-100 p-2 rounded-full">
                     <User className="h-4 w-4" />
                   </div>
                   <div>
                     <p className="font-medium text-sm">{employee.name}</p>
-                    <p className="text-xs text-gray-600">{employee.department}</p>
+                    <p className="text-xs text-gray-600">
+                      {employee.department}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -105,10 +119,14 @@ const AttendanceWidget = () => {
                     <>
                       <Badge variant="destructive" className="text-xs">
                         <XCircle className="h-3 w-3 mr-1" />
-                        Absent
+                        {t("adminDashboard:quickAttendance.absent")}
                       </Badge>
-                      <Button size="sm" onClick={() => markAttendance(employee.id, "check-in")} className="h-8 text-xs">
-                        Check In
+                      <Button
+                        size="sm"
+                        onClick={() => markAttendance(employee.id, "check-in")}
+                        className="h-8 text-xs"
+                      >
+                        {t("adminDashboard:quickAttendance.checkIn")}
                       </Button>
                     </>
                   )}
@@ -116,7 +134,7 @@ const AttendanceWidget = () => {
                     <>
                       <Badge className="bg-yellow-500 text-xs">
                         <Clock className="h-3 w-3 mr-1" />
-                        Present
+                        {t("adminDashboard:quickAttendance.present")}
                       </Badge>
                       <Button
                         size="sm"
@@ -124,14 +142,14 @@ const AttendanceWidget = () => {
                         onClick={() => markAttendance(employee.id, "check-out")}
                         className="h-8 text-xs"
                       >
-                        Check Out
+                        {t("adminDashboard:quickAttendance.checkOut")}
                       </Button>
                     </>
                   )}
                   {status === "completed" && (
                     <Badge className="bg-green-500 text-xs">
                       <CheckCircle className="h-3 w-3 mr-1" />
-                      Completed
+                      {t("adminDashboard:quickAttendance.completed")}
                     </Badge>
                   )}
                 </div>

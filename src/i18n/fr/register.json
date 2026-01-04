@@ -1,0 +1,49 @@
+{
+  "cardTitle": "Créer un compte employé",
+  "cardDescription": "Remplissez le formulaire pour enregistrer un nouveau compte",
+  "labels": {
+    "firstName": "Prénom",
+    "lastName": "Nom de famille",
+    "email": "Email",
+    "password": "Mot de passe",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "position": "Poste",
+    "department": "Département",
+    "salary": "Salaire",
+    "joiningDate": "Date d'entrée",
+    "employmentType": "Type d'emploi",
+    "emergencyContact": "Contact d'urgence",
+    "emergencyPhone": "Téléphone d'urgence",
+    "role": "Choisir un rôle",
+    "terms": "J'accepte les termes et conditions",
+    "biometric": "VÉRIFICATION BIOMÉTRIQUE"
+  },
+  "roles": {
+    "admin": "Administrateur",
+    "manager": "Manager",
+    "employee": "Employé"
+  },
+  "biometric": {
+    "captureFinger": "Capturer le doigt {{count}}",
+    "scanningFinger": "Scan du doigt {{count}}...",
+    "limitReached": "Limite atteinte (10/10)"
+  },
+  "submit": {
+    "creating": "Création du compte...",
+    "scanFirst": "Scanner l'empreinte pour continuer",
+    "signUpFingers": "S'inscrire avec {{count}} doigts"
+  },
+  "fingersIncomplete": {
+    "title": "Doigts incomplets",
+    "description": "Veuillez scanner au moins 5 doigts. Vous n'en avez scanné que {{count}}."
+  },
+  "fingerprintRequired": {
+    "title": "Empreinte requise",
+    "description": "Veuillez scanner vos empreintes avant de vous inscrire."
+  },
+  "accountCreated": {
+    "title": "Compte créé",
+    "description": "Profil de l'employé créé avec succès."
+  }
+}

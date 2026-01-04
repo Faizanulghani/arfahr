@@ -16,46 +16,50 @@ import {
   Fingerprint,
   BarChart3,
 } from "lucide-react";
+import { t } from "i18next";
+import { useState } from "react";
+import i18n from "@/i18n/index";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [lang, setLang] = useState(i18n.language || "en");
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng); // this switches language at runtime
+    setLang(lng);
+    localStorage.setItem("lang", lng);
+  };
 
   const features = [
     {
       icon: Fingerprint,
-      title: "Biometric Authentication",
-      description:
-        "Secure fingerprint-based attendance with DigitalPersona integration",
+      titleKey: "features.biometricAuthentication.title",
+      descriptionKey: "features.biometricAuthentication.description",
     },
     {
       icon: Clock,
-      title: "Real-time Tracking",
-      description:
-        "Live attendance monitoring and automatic punch in/out logging",
+      titleKey: "features.realTimeTracking.title",
+      descriptionKey: "features.realTimeTracking.description",
     },
     {
       icon: BarChart3,
-      title: "Analytics & Reports",
-      description:
-        "Comprehensive attendance reports and data export capabilities",
+      titleKey: "features.analyticsReports.title",
+      descriptionKey: "features.analyticsReports.description",
     },
     {
       icon: Users,
-      title: "Employee Management",
-      description:
-        "Complete employee database with shift scheduling and management",
+      titleKey: "features.employeeManagement.title",
+      descriptionKey: "features.employeeManagement.description",
     },
     {
       icon: Shield,
-      title: "Role-based Access",
-      description:
-        "Multi-level access control for employees, managers, and admins",
+      titleKey: "features.roleBasedAccess.title",
+      descriptionKey: "features.roleBasedAccess.description",
     },
     {
       icon: Calendar,
-      title: "Shift Management",
-      description:
-        "Flexible shift scheduling with overtime tracking and alerts",
+      titleKey: "features.shiftManagement.title",
+      descriptionKey: "features.shiftManagement.description",
     },
   ];
 
@@ -73,16 +77,28 @@ const Index = () => {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   AfraExpress
                 </h1>
-                <p className="text-sm text-gray-600">Smart Attendance System</p>
+                <p className="text-sm text-gray-600">
+                  {t("navbar:smartAttendence")}
+                </p>
               </div>
             </div>
             <div className="flex space-x-3">
+              <div className="flex items-center space-x-3">
+                <select
+                  value={lang}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className="border rounded px-2 py-1 bg-white"
+                >
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
               <Button
                 className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 variant="outline"
                 onClick={() => navigate("/login")}
               >
-                Login
+                {t("navbar:login")}
               </Button>
               {/* <Button onClick={() => navigate("/dashboard")} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                 Dashboard
@@ -104,18 +120,15 @@ const Index = () => {
       <section className="container mx-auto px-6 py-20">
         <div className="text-center mb-16">
           <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-200">
-            Powered by DigitalPersona Technology
+            {t("heroSection:headline")}
           </Badge>
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-            Biometric Attendance
+            {t("heroSection:heading")}
             <br />
-            <span className="text-blue-600">Made Simple</span>
+            <span className="text-blue-600">{t("heroSection:heading2")}</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Secure, reliable, and efficient fingerprint-based attendance system
-            for AfraExpress International. Track employee attendance, manage
-            shifts, and generate comprehensive reports with our advanced
-            biometric solution.
+            {t("heroSection:para")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -124,7 +137,7 @@ const Index = () => {
               onClick={() => navigate("/login")}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-3"
             >
-              Start Attendance
+              {t("heroSection:button")}
             </Button>
             <Button
               size="lg"
@@ -132,7 +145,7 @@ const Index = () => {
               onClick={() => navigate("/dashboard")}
               className="text-lg px-8 py-3 border-2 hover:bg-gray-50"
             >
-              View Dashboard
+              {t("heroSection:button2")}
             </Button>
           </div>
         </div>
@@ -142,7 +155,7 @@ const Index = () => {
           <Card className="text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="pt-6">
               <div className="text-3xl font-bold text-blue-600 mb-2">99.9%</div>
-              <div className="text-gray-600">Accuracy Rate</div>
+              <div className="text-gray-600">{t("stats:AccuracyRate")}</div>
             </CardContent>
           </Card>
           <Card className="text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -150,7 +163,7 @@ const Index = () => {
               <div className="text-3xl font-bold text-green-600 mb-2">
                 &lt; 2s
               </div>
-              <div className="text-gray-600">Recognition Time</div>
+              <div className="text-gray-600">{t("stats:RecognitionTime")}</div>
             </CardContent>
           </Card>
           <Card className="text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -158,7 +171,7 @@ const Index = () => {
               <div className="text-3xl font-bold text-purple-600 mb-2">
                 24/7
               </div>
-              <div className="text-gray-600">System Uptime</div>
+              <div className="text-gray-600">{t("stats:SystemUptime")}</div>
             </CardContent>
           </Card>
           <Card className="text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -166,7 +179,9 @@ const Index = () => {
               <div className="text-3xl font-bold text-orange-600 mb-2">
                 500+
               </div>
-              <div className="text-gray-600">Employees Supported</div>
+              <div className="text-gray-600">
+                {t("stats:EmployeesSupported")}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -183,12 +198,14 @@ const Index = () => {
                   <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-lg group-hover:scale-110 transition-transform duration-300">
                     <feature.icon className="h-6 w-6 text-white" />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl">
+                    {t(feature.titleKey, { ns: "features" })}
+                  </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  {feature.description}
+                  {t(feature.descriptionKey, { ns: "features" })}
                 </CardDescription>
               </CardContent>
             </Card>
@@ -198,9 +215,12 @@ const Index = () => {
         {/* CTA Section */}
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-0 text-white">
           <CardContent className="text-center py-12">
-            <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              {" "}
+              {t("readyHeading", { ns: "cta" })}
+            </h2>
             <p className="text-xl mb-8 text-blue-100">
-              Transform your attendance management with our biometric solution
+              {t("readyDescription", { ns: "cta" })}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -209,7 +229,7 @@ const Index = () => {
                 onClick={() => navigate("/employee-registration")}
                 className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3"
               >
-                Register Employee
+                {t("registerButton", { ns: "cta" })}
               </Button>
               <Button
                 size="lg"
@@ -217,7 +237,7 @@ const Index = () => {
                 onClick={() => navigate("/reports")}
                 className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3 "
               >
-                View Reports
+                {t("viewReportsButton", { ns: "cta" })}
               </Button>
             </div>
           </CardContent>
@@ -228,76 +248,94 @@ const Index = () => {
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
                   <Fingerprint className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xl font-bold">AfraExpress</span>
+                <span className="text-xl font-bold">
+                  {t("footer:companyName")}
+                </span>
               </div>
+              <p className="text-gray-400">{t("footer:companyDescription")}</p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">
+                {t("footer:quickLinks")}
+              </h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:links.dashboard")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:links.attendance")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:links.reports")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:links.settings")}
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">
+                {t("footer:support")}
+              </h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:supportLinks.documentation")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:supportLinks.helpCenter")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:supportLinks.contactUs")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    {t("footer:supportLinks.systemStatus")}
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">{t("contactInfo")}</h3>
+              <p className="text-gray-400 mb-2">
+                {t("footer:contactDetails.company")}
+              </p>
+              <p className="text-gray-400 mb-2">
+                {t("footer:contactDetails.locations")}
+              </p>
               <p className="text-gray-400">
-                Advanced biometric attendance system for modern workplaces.
+                {t("footer:contactDetails.email")}
               </p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Dashboard
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Attendance
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Reports
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Settings
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Contact Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    System Status
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
-              <p className="text-gray-400 mb-2">AfraExpress International</p>
-              <p className="text-gray-400 mb-2">USA - Burkina Faso</p>
-              <p className="text-gray-400">support@afraexpress.com</p>
-            </div>
           </div>
+
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2026 AfraExpress International. All rights reserved.</p>
+            <p>{t("footer:copyright")}</p>
           </div>
         </div>
       </footer>

@@ -1,0 +1,25 @@
+{
+  "companyName": "AfraExpress",
+  "companyDescription": "Advanced biometric attendance system for modern workplaces.",
+  "quickLinks": "Quick Links",
+  "links": {
+    "dashboard": "Dashboard",
+    "attendance": "Attendance",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "support": "Support",
+  "supportLinks": {
+    "documentation": "Documentation",
+    "helpCenter": "Help Center",
+    "contactUs": "Contact Us",
+    "systemStatus": "System Status"
+  },
+  "contactInfo": "Contact Info",
+  "contactDetails": {
+    "company": "AfraExpress International",
+    "locations": "USA - Burkina Faso",
+    "email": "support@afraexpress.com"
+  },
+  "copyright": "© 2026 AfraExpress International. All rights reserved."
+}

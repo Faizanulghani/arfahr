@@ -1,0 +1,28 @@
+{
+  "features": {
+    "biometricAuthentication": {
+      "title": "Authentification biométrique",
+      "description": "Présence sécurisée basée sur les empreintes digitales avec intégration DigitalPersona"
+    },
+    "realTimeTracking": {
+      "title": "Suivi en temps réel",
+      "description": "Suivi en direct de la présence et enregistrement automatique des pointages"
+    },
+    "analyticsReports": {
+      "title": "Analyses et rapports",
+      "description": "Rapports complets sur la présence et capacités d'exportation des données"
+    },
+    "employeeManagement": {
+      "title": "Gestion des employés",
+      "description": "Base de données complète des employés avec planification et gestion des shifts"
+    },
+    "roleBasedAccess": {
+      "title": "Accès basé sur les rôles",
+      "description": "Contrôle d'accès multi-niveaux pour les employés, managers et administrateurs"
+    },
+    "shiftManagement": {
+      "title": "Gestion des shifts",
+      "description": "Planification flexible des shifts avec suivi des heures supplémentaires et alertes"
+    }
+  }
+}

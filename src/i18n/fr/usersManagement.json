@@ -1,0 +1,162 @@
+{
+  "usersManagement": {
+    "title": "Gestion des utilisateurs",
+    "description": "Gérer les utilisateurs du système et leurs accès",
+    "dashboard": "Tableau de bord",
+    "logout": "Se déconnecter",
+    "searchPlaceholder": "Rechercher des utilisateurs par nom, email ou ID employé...",
+    "addUser": "Ajouter un utilisateur",
+    "totalUsers": "Nombre total d'utilisateurs",
+    "activeUsers": "Utilisateurs actifs",
+    "admins": "Administrateurs",
+    "inactive": "Inactifs",
+    "systemUsers": "Utilisateurs du système",
+    "showingUsers": "Affichage de {{filtered}} sur {{total}} utilisateurs",
+    "employee": "Employé",
+    "contact": "Contact",
+    "role": "Rôle",
+    "userDetails": "Détails de l'utilisateur",
+    "name": "Nom :",
+    "email": "Email :",
+    "employeeId": "ID Employé :",
+    "department": "Département :",
+    "status": "Statut",
+    "hireDate": "Date d'embauche",
+    "actions": "Actions",
+    "position": "Poste :",
+    "salary": "Salaire :",
+    "phone": "Téléphone :",
+    "emergencyContact": "Contact d'urgence :",
+    "emergencyPhone": "Téléphone d'urgence :",
+    "address": "Adresse :",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer {{name}} ?"
+  },
+  "auth": {
+    "login": "Connexion",
+    "accessAccount": "Accédez à votre compte",
+    "email": "Email",
+    "password": "Mot de passe",
+    "noAccount": "Vous n’avez pas de compte ?",
+    "signup": "S’inscrire",
+    "loginSuccess": "Connexion réussie",
+    "loginFailed": "Échec de la connexion",
+    "redirecting": "Redirection vers le tableau de bord {{role}}...",
+    "invalidCredentials": "Identifiants invalides",
+    "roleNotFound": "Rôle utilisateur introuvable. Veuillez contacter l’administrateur."
+  },
+
+  "toast": {
+    "error": "Erreur",
+    "accountCreated": "Compte créé",
+    "employeeCreated": "Profil employé créé avec succès.",
+    "updateFailed": "Échec de la mise à jour",
+    "userUpdated": "Utilisateur mis à jour",
+    "userUpdatedDesc": "Les informations de l’utilisateur ont été mises à jour avec succès.",
+    "missingPassword": "Mot de passe manquant",
+    "missingPasswordDesc": "Veuillez saisir un mot de passe pour le nouvel utilisateur.",
+    "addUserFailed": "Échec de l’ajout de l’utilisateur",
+    "addUserError": "Erreur lors de l’ajout",
+    "userAdded": "Utilisateur ajouté",
+    "userAddedDesc": "L’utilisateur a été ajouté avec succès.",
+    "fingerCaptured": "Doigt capturée",
+    "fingerCapturedDesc": "Les empreintes {{count}} ont bien eté capturées."
+  },
+
+  "biometric": {
+    "fingerIncomplete": "Empreintes incomplètes",
+    "scanAtLeast": "Veuillez scanner au moins 5 doigts. Vous en avez scanné seulement {{count}}.",
+    "fingerRequired": "Empreinte requise",
+    "scanBeforeSignup": "Veuillez scanner vos empreintes avant l’inscription.",
+    "registration": "Enregistrement des empreintes",
+    "waitingScanner": "En attente du scanner...",
+    "scanFinger": "Scanner le doigt n°{{count}}",
+    "completed": "Enregistrement terminé ✅"
+  },
+
+  "dashboard": {
+    "welcomeBack": "Bon retour",
+    "usersManagement": "Gestion des utilisateurs",
+    "employeeManagement": "Gestion des employés",
+    "shiftsManagement": "Gestion des horaires",
+    "salaryManagement": "Gestion des salaires",
+    "attendanceTracking": "Suivi de présence",
+    "reportsAnalytics": "Rapports et analyses",
+    "systemSettings": "Paramètres du système"
+  },
+
+  "stats": {
+    "totalEmployees": "Employés totaux",
+    "presentToday": "Présents aujourd’hui",
+    "absentToday": "Absents aujourd’hui",
+    "lateArrivals": "Arrivées en retard"
+  },
+
+  "attendance": {
+    "weeklyAttendance": "Présence hebdomadaire",
+    "productivity": "Productivité",
+    "onTimeRate": "Taux de ponctualité",
+    "quickAttendance": "Présence rapide",
+    "present": "Présent",
+    "absent": "Absent",
+    "checkIn": "Entrée",
+    "checkOut": "Sortie",
+    "completed": "Terminé"
+  },
+
+  "employees": {
+    "search": "Recherche d’employés",
+    "searchPlaceholder": "Rechercher des employés...",
+    "notFound": "Aucun employé trouvé"
+  },
+  "quickActions": {
+    "addEmployee": "Ajouter un employé",
+    "registerEmployee": "Enregistrer un nouvel employé",
+    "markAttendance": "Pointer l’entrée / la sortie des employés",
+    "generateReport": "Générer un rapport",
+    "createReport": "Créer un rapport de présence",
+    "viewCalendar": "Voir le calendrier",
+    "checkSchedule": "Consulter le planning",
+    "analytics": "Analyses",
+    "viewAnalytics": "Voir les analyses détaillées",
+    "settings": "Paramètres",
+    "configureSystem": "Configurer le système"
+  },
+
+  "users": {
+    "dashboard": "Tableau de bord",
+    "logout": "Se déconnecter",
+    "addUser": "Ajouter un utilisateur",
+    "totalUsers": "Nombre total d’utilisateurs",
+    "activeUsers": "Utilisateurs actifs",
+    "inactive": "Inactifs",
+    "admins": "Administrateurs",
+    "systemUsers": "Utilisateurs du système",
+    "showing": "Affichage de {{filtered}} sur {{total}} utilisateurs",
+    "searchPlaceholder": "Rechercher des utilisateurs par nom, email ou ID employé...",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer {{name}} ?"
+  },
+
+  "form": {
+    "addEmployeeTitle": "Remplissez le formulaire pour ajouter un nouvel employé.",
+    "updateEmployeeTitle": "Mettez à jour les informations de l’employé ci-dessous.",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "position": "Poste",
+    "department": "Département",
+    "salary": "Salaire",
+    "joiningDate": "Date d’entrée",
+    "employmentType": "Type d’emploi",
+    "emergencyContact": "Contact d’urgence",
+    "emergencyPhone": "Téléphone d’urgence",
+    "chooseRole": "Choisir un rôle",
+    "admin": "Administrateur",
+    "manager": "Manager",
+    "employee": "Employé",
+    "confirmPolicy": "Je confirme que cet utilisateur accepte la politique de l’entreprise",
+    "processing": "Traitement en cours...",
+    "updateUser": "Mettre à jour l’utilisateur",
+    "addUser": "Ajouter un utilisateur"
+  }
+}

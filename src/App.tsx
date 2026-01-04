@@ -24,6 +24,7 @@ import AttendanceScanner from "./pages/AttendanceScanner";
 import EditEmployeeForm from "./pages/EditEmployeeForm";
 import ViewEmployeePage from "./pages/ViewEmployeePage";
 import { AdminProvider } from "./contexts/LaravelAdminContext";
+import "./i18n";
 
 const queryClient = new QueryClient();
 

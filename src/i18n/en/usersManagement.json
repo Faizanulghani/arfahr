@@ -1,0 +1,172 @@
+{
+  "usersManagement": {
+    "title": "Users Management",
+    "description": "Manage system users and access",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "searchPlaceholder": "Search users by name, email, or employee ID...",
+    "addUser": "Add User",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "admins": "Admins",
+    "inactive": "Inactive",
+    "systemUsers": "System Users",
+    "showingUsers": "Showing {{filtered}} of {{total}} users",
+    "employee": "Employee",
+    "contact": "Contact",
+    "role": "Role:",
+    "userdepartment": "Department",
+    "userDetails": "User Details",
+    "name": "Name:",
+    "email": "Email:",
+    "employeeId": "Employee ID:",
+    "department": "Department:",
+    "status": "Status:",
+    "hireDate": "Hire Date",
+    "actions": "Actions",
+    "position": "Position:",
+    "salary": "Salary:",
+    "phone": "Phone:",
+    "emergencyContact": "Emergency Contact:",
+    "emergencyPhone": "Emergency Phone:",
+    "address": "Address:",
+    "confirmDelete": "Are you sure you want to delete {{name}}?"
+  },
+   "auth": {
+    "login": "Login",
+    "accessAccount": "Access your account",
+    "email": "Email",
+    "password": "Password",
+    "noAccount": "Don’t have an account?",
+    "signup": "Signup",
+    "loginSuccess": "Login Successful",
+    "loginFailed": "Login Failed",
+    "redirecting": "Redirecting to {{role}} dashboard...",
+    "invalidCredentials": "Invalid credentials",
+    "roleNotFound": "User role not found. Please contact admin."
+  },
+
+  "toast": {
+    "error": "Error",
+    "accountCreated": "Account Created",
+    "employeeCreated": "Employee profile created successfully.",
+    "updateFailed": "Update Failed",
+    "userUpdated": "User Updated",
+    "userUpdatedDesc": "The user information has been updated successfully.",
+    "missingPassword": "Missing Password",
+    "missingPasswordDesc": "Please enter a password for the new user.",
+    "addUserFailed": "Add User Failed",
+    "addUserError": "Add User Error",
+    "userAdded": "User Added",
+    "userAddedDesc": "The user has been added successfully.",
+    "fingerCaptured": "Finger Captured",
+    "fingerCapturedDesc": "The fingerprint {{count}} registered successfully."
+
+  },
+
+  "biometric": {
+    "fingerIncomplete": "Fingers Incomplete",
+    "scanAtLeast": "Please scan at least 5 fingers. You have only scanned {{count}}.",
+    "fingerRequired": "Fingerprint Required",
+    "scanBeforeSignup": "Please scan your fingerprints before signing up.",
+    "registration": "Fingerprint Registration",
+    "waitingScanner": "Waiting for Scanner...",
+    "scanFinger": "Scan Finger #{{count}}",
+    "completed": "Registration Complete ✅"
+  },
+
+  "dashboard": {
+    "welcomeBack": "Welcome back",
+    "usersManagement": "Users Management",
+    "employeeManagement": "Employee Management",
+    "shiftsManagement": "Shifts Management",
+    "salaryManagement": "Salary Management",
+    "attendanceTracking": "Attendance Tracking",
+    "reportsAnalytics": "Reports & Analytics",
+    "systemSettings": "System Settings",
+    "manageUsers": "Manage system users and access",
+    "manageEmployees": "Manage employee profiles and information",
+    "configureShifts": "Configure work shifts and schedules",
+    "manageSalary": "Manage employee salary structures",
+    "markAttendance": "Mark attendance and view records",
+    "viewReports": "View comprehensive attendance reports",
+    "configureSystem": "Configure system preferences"
+  },
+
+  "stats": {
+    "totalEmployees": "Total Employees",
+    "presentToday": "Present Today",
+    "absentToday": "Absent Today",
+    "lateArrivals": "Late Arrivals"
+  },
+
+  "attendance": {
+    "weeklyAttendance": "Weekly Attendance",
+    "productivity": "Productivity",
+    "onTimeRate": "On-Time Rate",
+    "quickAttendance": "Quick Attendance",
+    "present": "Present",
+    "absent": "Absent",
+    "checkIn": "Check In",
+    "checkOut": "Check Out",
+    "completed": "Completed"
+  },
+
+  "employees": {
+    "search": "Employee Search",
+    "searchPlaceholder": "Search employees...",
+    "notFound": "No employees found"
+  },
+
+  "quickActions": {
+    "addEmployee": "Add Employee",
+    "registerEmployee": "Register new employee",
+    "markAttendance": "Clock in/out employees",
+    "generateReport": "Generate Report",
+    "createReport": "Create attendance report",
+    "viewCalendar": "View Calendar",
+    "checkSchedule": "Check schedule",
+    "analytics": "Analytics",
+    "viewAnalytics": "View detailed analytics",
+    "settings": "Settings",
+    "configureSystem": "Configure system"
+  },
+
+  "users": {
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "addUser": "Add User",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "inactive": "Inactive",
+    "admins": "Admins",
+    "systemUsers": "System Users",
+    "showing": "Showing {{filtered}} of {{total}} users",
+    "searchPlaceholder": "Search users by name, email, or employee ID...",
+    "confirmDelete": "Are you sure you want to delete {{name}}?"
+  },
+
+  "form": {
+    "addEmployeeTitle": "Fill the form to add a new employee.",
+    "updateEmployeeTitle": "Update employee details below.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone",
+    "address": "Address",
+    "position": "Position",
+    "department": "Department",
+    "salary": "Salary",
+    "joiningDate": "Joining Date",
+    "employmentType": "Employment Type",
+    "emergencyContact": "Emergency Contact",
+    "emergencyPhone": "Emergency Phone",
+    "chooseRole": "Choose Role",
+    "admin": "Admin",
+    "manager": "Manager",
+    "employee": "Employee",
+    "confirmPolicy": "I confirm that this user agrees to the company policy",
+    "processing": "Processing...",
+    "updateUser": "Update User",
+    "addUser": "Add User"
+  }
+}
