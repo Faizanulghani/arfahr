@@ -391,7 +391,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>{t("usersManagement:form.number")}</Label>
+              <Label>{t("usersManagement:form.phone")}</Label>
               <Input
                 type="number"
                 name="salary"
@@ -401,7 +401,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             </div>
 
             <div className="space-y-2 col-span-1">
-              <Label>{t("usersManagement:form.date")}</Label>
+              <Label>{t("usersManagement:form.joiningDate")}</Label>
               <Input
                 type="date"
                 name="joining_date"
