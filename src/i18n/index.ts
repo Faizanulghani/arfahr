@@ -11,7 +11,10 @@ import enLogin from "./en/login.json";
 import enRegister from "./en/register.json";
 import enAdminDashboard from "./en/adminDashboard.json";
 import enUsersManagement from "./en/usersManagement.json";
-
+import enEmployeeManagement from "./en/employeeManagement.json";
+import enEmployeeRegistration from "./en/employeeRegistration.json";
+import enShiftsManagement from "./en/shiftsManagement.json";
+import enManagerPortal from "./en/managerPortal.json";
 
 import frNavbar from "./fr/navbar.json";
 import frHeroSection from "./fr/herosection.json";
@@ -22,7 +25,11 @@ import frFooter from "./fr/footer.json";
 import frLogin from "./fr/login.json";
 import frRegister from "./fr/register.json";
 import frAdminDashboard from "./fr/adminDashboard.json";
-import fnUsersManagement from "./fr/usersManagement.json";
+import frUsersManagement from "./fr/usersManagement.json";
+import frEmployeeManagement from "./fr/employeeManagement.json";
+import frEmployeeRegistration from "./fr/employeeRegistration.json";
+import frShiftsManagement from "./fr/shiftsManagement.json";
+import frManagerPortal from "./fr/managerPortal.json";
 
 
 const lang = localStorage.getItem("lang") || "en";
@@ -39,7 +46,11 @@ i18n.use(initReactI18next).init({
       login: enLogin,
       register: enRegister,
       adminDashboard: enAdminDashboard,
-      usersManagement: enUsersManagement
+      usersManagement: enUsersManagement,
+      employeeManagement: enEmployeeManagement,
+      employeeRegistration:enEmployeeRegistration,
+      shiftsManagement:enShiftsManagement,
+      managerPortal: enManagerPortal
     },
     fr: {
       navbar: frNavbar,
@@ -51,7 +62,11 @@ i18n.use(initReactI18next).init({
       login: frLogin,
       register: frRegister,
       adminDashboard: frAdminDashboard,
-      usersManagement: fnUsersManagement
+      usersManagement: frUsersManagement,
+      employeeManagement: frEmployeeManagement,
+      employeeRegistration:frEmployeeRegistration,
+      shiftsManagement:frShiftsManagement,
+      managerPortal: frManagerPortal
     }
   },
   lng: lang,

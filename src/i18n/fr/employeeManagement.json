@@ -1,0 +1,39 @@
+{
+  "app": {
+    "subtitle": "Gérez votre personnel"
+  },
+  "navbar": {
+    "dashboard": "Tableau de bord",
+    "logout": "Se déconnecter"
+  },
+  "search": {
+    "placeholder": "Rechercher des employés..."
+  },
+  "filters": {
+    "allDepartments": "Tous les départements"
+  },
+  "buttons": {
+    "addEmployee": "Ajouter un employé"
+  },
+  "stats": {
+    "total": "Total",
+    "active": "Actifs",
+    "departments": "Départements",
+    "thisMonth": "Ce mois-ci"
+  },
+  "directory": {
+    "title": "Répertoire des employés",
+    "showing": "Affichage de {{shown}} sur {{total}} employés"
+  },
+  "employee": {
+    "status": {
+      "active": "actif",
+      "inactive": "inactif"
+    }
+  },
+  "actions": {
+    "view": "Voir",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  }
+}

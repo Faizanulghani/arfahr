@@ -1,0 +1,35 @@
+{
+  "shift": {
+    "title": "Gestion des horaires",
+    "searchPlaceholder": "Rechercher des horaires...",
+    "addShift": "+ Ajouter un horaire",
+
+    "stats": {
+      "totalShifts": "Total des horaires",
+      "totalEmployees": "Total des employés",
+      "assigned": "Assignés",
+      "unassigned": "Non assignés"
+    },
+
+    "form": {
+      "createTitle": "Créer un horaire",
+      "editTitle": "Modifier l’horaire",
+      "shiftName": "Nom de l’horaire",
+      "breakDuration": "Durée de la pause",
+      "startTime": "Heure de début",
+      "endTime": "Heure de fin",
+      "daysOfWeek": "Jours de la semaine",
+      "assignEmployees": "Assigner des employés",
+      "createButton": "Créer l’horaire",
+      "updateButton": "Mettre à jour l’horaire"
+    },
+
+    "card": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "break": "Pause", 
+      "days": "Jours",
+      "employees": "Employés"
+    }
+  }
+}

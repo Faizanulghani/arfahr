@@ -1,0 +1,23 @@
+{
+  "manager": {
+    "portalTitle": "Portail du gestionnaire",
+    "welcome": "Bon retour",
+    "currentTime": "Heure actuelle",
+    "logout": "Se déconnecter"
+  },
+  "managerStats": {
+    "teamMembers": "Membres de l'équipe",
+    "presentToday": "Présents Aujourd'hui",
+    "lateArrivals": "Retards",
+    "absent": "Absent"
+  },
+  "teamPerformance": {
+    "onTimeRate": "Taux de Ponctualité",
+    "productivity": "Productivité",
+    "teamSatisfaction": "Satisfaction de l'équipe"
+  },
+  "dashboard": {
+    "teamPerformanceTitle": "Performance de l'équipe",
+    "teamPerformanceDescription": "Principaux indicateurs de performance de votre équipe"
+  }
+}

@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { User, Fingerprint } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { t } from "i18next";
 
 const EmployeeForm = () => {
   const { toast } = useToast();
@@ -58,9 +59,13 @@ const EmployeeForm = () => {
         setBiometricLoading(false);
 
         toast({
-          title: `Finger ${capturedCount + 1} Captured ✅`,
+          title: t("employeeRegistration:biometric.fingerCaptured", {
+            number: capturedCount + 1,
+          }),
           description:
-            capturedCount < 9 ? "Scan next finger." : "All 10 fingers ready!",
+            capturedCount < 9
+              ? t("employeeRegistration:biometric.scanNext")
+              : t("employeeRegistration:biometric.allReady"),
         });
       }
     };
@@ -89,8 +94,8 @@ const EmployeeForm = () => {
 
     if (allBiometricData.length < 1) {
       toast({
-        title: "Error",
-        description: "Scan at least 1 finger.",
+        title: t("employeeRegistration:toast.error"),
+        description: t("employeeRegistration:toast.scanAtLeastOne"),
         variant: "destructive",
       });
       return;
@@ -99,7 +104,6 @@ const EmployeeForm = () => {
     setIsLoading(true);
 
     try {
-      // Step 1: Auth User Create karein (Admin Mode)
       const { data: authData, error: authError } =
         await supabaseAdmin.auth.admin.createUser({
           email: formData.email,
@@ -122,15 +126,13 @@ const EmployeeForm = () => {
         });
 
       if (authError) {
-        console.error("Auth Error:", authError.message);
         throw authError;
       }
 
       if (authData?.user) {
-        // Step 2: Employees Table mein entry karein
         const { error: empError } = await supabase.from("employees").insert([
           {
-            id: authData.user.id, // Auth ID aur Table ID match honi chahiye
+            id: authData.user.id,
             first_name: formData.first_name,
             last_name: formData.last_name,
             email: formData.email,
@@ -151,22 +153,21 @@ const EmployeeForm = () => {
         ]);
 
         if (empError) {
-          // Agar yahan error aye to user ko batayein
-          console.error("Database Insert Error:", empError.message);
           throw empError;
         }
 
         toast({
-          title: "✅ Success",
-          description: "Employee Registered Successfully in Database!",
+          title: t("employeeRegistration:toast.successTitle"),
+          description: t("employeeRegistration:toast.employeeRegistered"),
         });
 
         navigate("/dashboard");
       }
     } catch (err: any) {
       toast({
-        title: "❌ Registration Failed",
-        description: err.message || "Something went wrong",
+        title: t("employeeRegistration:toast.registrationFailed"),
+        description:
+          err.message || t("employeeRegistration:toast.somethingWentWrong"),
         variant: "destructive",
       });
     } finally {
@@ -179,10 +180,10 @@ const EmployeeForm = () => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <User className="h-6 w-6 text-blue-600" />
-          <span>New Employee Registration</span>
+          <span>{t("employeeRegistration:employeeRegistration.title")}</span>
         </CardTitle>
         <CardDescription>
-          Enter details and register 10 fingerprints.
+          {t("employeeRegistration:employeeRegistration.description")}
         </CardDescription>
       </CardHeader>
 
@@ -191,41 +192,34 @@ const EmployeeForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputWithLabel
               name="first_name"
-              label="First Name *"
+              label={t("employeeRegistration:form.firstName")}
               value={formData.first_name}
               onChange={handleInputChange}
             />
             <InputWithLabel
               name="last_name"
-              label="Last Name *"
+              label={t("employeeRegistration:form.lastName")}
               value={formData.last_name}
               onChange={handleInputChange}
             />
             <InputWithLabel
               name="email"
-              label="Email *"
+              label={t("employeeRegistration:form.email")}
               type="email"
               value={formData.email}
               onChange={handleInputChange}
             />
             <InputWithLabel
               name="phone"
-              label="Phone *"
+              label={t("employeeRegistration:form.phone")}
               value={formData.phone}
               onChange={handleInputChange}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputWithLabel
-              name="first_name"
-              label="First Name *"
-              value={formData.first_name}
-              onChange={handleInputChange}
-            />
-            {/* ... other fields */}
-            <InputWithLabel
               name="password"
-              label="Account Password *"
+              label={t("employeeRegistration:form.password")}
               type="password"
               value={formData.password}
               onChange={handleInputChange}
@@ -235,26 +229,26 @@ const EmployeeForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputWithLabel
               name="position"
-              label="Position *"
+              label={t("employeeRegistration:form.position")}
               value={formData.position}
               onChange={handleInputChange}
             />
             <InputWithLabel
               name="department"
-              label="Department *"
+              label={t("employeeRegistration:form.department")}
               value={formData.department}
               onChange={handleInputChange}
             />
             <InputWithLabel
               name="salary"
-              label="Salary"
+              label={t("employeeRegistration:form.salary")}
               type="number"
               value={formData.salary}
               onChange={handleInputChange}
             />
             <InputWithLabel
               name="joining_date"
-              label="Joining Date *"
+              label={t("employeeRegistration:form.joiningDate")}
               type="date"
               value={formData.joining_date}
               onChange={handleInputChange}
@@ -265,14 +259,16 @@ const EmployeeForm = () => {
           <div className="p-4 bg-slate-50 rounded-lg border space-y-3">
             <div className="flex justify-between items-center">
               <Label className="font-bold text-slate-700">
-                Fingerprint Registration
+                {t("employeeRegistration:biometric.title")}
               </Label>
               <span
                 className={`text-sm font-medium ${
                   capturedCount === 10 ? "text-green-600" : "text-blue-600"
                 }`}
               >
-                {capturedCount} / 10 Captured
+                {t("employeeRegistration:biometric.captured", {
+                  count: capturedCount + 1,
+                })}
               </span>
             </div>
 
@@ -292,10 +288,12 @@ const EmployeeForm = () => {
             >
               <Fingerprint className="h-4 w-4" />
               {biometricLoading
-                ? "Waiting..."
+                ? t("employeeRegistration:biometric.waiting")
                 : capturedCount < 10
-                ? `Scan Finger #${capturedCount + 1}`
-                : "10 Fingers Ready ✅"}
+                ? t("employeeRegistration:biometric.scanFinger", {
+                    number: capturedCount + 1,
+                  })
+                : t("employeeRegistration:biometric.ready")}
             </Button>
           </div>
 
@@ -307,7 +305,9 @@ const EmployeeForm = () => {
                 setFormData({ ...formData, has_agreed_to_terms: !!val })
               }
             />
-            <Label htmlFor="terms">I agree to the terms and conditions *</Label>
+            <Label htmlFor="terms">
+              {t("employeeRegistration:terms.agree")}
+            </Label>
           </div>
 
           <Button
@@ -315,7 +315,9 @@ const EmployeeForm = () => {
             className="w-full h-12 text-lg"
             disabled={isLoading || capturedCount === 0}
           >
-            {isLoading ? "Saving..." : "Register Employee"}
+            {isLoading
+              ? t("employeeRegistration:buttons.saving")
+              : t("employeeRegistration:buttons.register")}
           </Button>
         </form>
       </CardContent>

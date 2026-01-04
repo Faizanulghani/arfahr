@@ -1,0 +1,43 @@
+{
+  "heading": "Ajoutez de nouveaux employés au système de présence ArfaExpress",
+  "employeeRegistration": {
+    "title": "Inscription d’un nouvel employé",
+    "description": "Saisissez les informations et enregistrez 10 empreintes digitales."
+  },
+  "form": {
+    "firstName": "Prénom *",
+    "lastName": "Nom de famille *",
+    "email": "E-mail *",
+    "phone": "Téléphone *",
+    "password": "Mot de passe du compte *",
+    "position": "Poste *",
+    "department": "Département *",
+    "salary": "Salaire",
+    "joiningDate": "Date d’entrée *"
+  },
+  "biometric": {
+    "title": "Enregistrement des empreintes digitales",
+    "captured": "{{count}} / 10 capturées",
+    "waiting": "En attente...",
+    "scanFinger": "Scanner le doigt n°{{number}}",
+    "ready": "10 doigts enregistrés ✅",
+    "fingerCaptured": "Doigt {{number}} capturé ✅",
+    "scanNext": "Scannez le doigt suivant.",
+    "allReady": "Les 10 doigts sont prêts !"
+  },
+  "terms": {
+    "agree": "J’accepte les termes et conditions *"
+  },
+  "buttons": {
+    "saving": "Enregistrement...",
+    "register": "Enregistrer l’employé"
+  },
+  "toast": {
+    "error": "Erreur",
+    "scanAtLeastOne": "Scannez au moins un doigt.",
+    "successTitle": "✅ Succès",
+    "employeeRegistered": "Employé enregistré avec succès dans la base de données !",
+    "registrationFailed": "❌ Échec de l’inscription",
+    "somethingWentWrong": "Une erreur s’est produite"
+  }
+}

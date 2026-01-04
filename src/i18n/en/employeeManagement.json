@@ -1,0 +1,28 @@
+{
+  "app": {
+    "subtitle": "Manage your workforce"
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "logout": "Logout"
+  },
+  "search": {
+    "placeholder": "Search employees..."
+  },
+  "filters": {
+    "allDepartments": "All Departments"
+  },
+  "buttons": {
+    "addEmployee": "Add Employee"
+  },
+  "stats": {
+    "total": "Total",
+    "active": "Active",
+    "departments": "Departments",
+    "thisMonth": "This Month"
+  },
+  "directory": {
+    "title": "Employee Directory",
+    "showing": "Showing {{shown}} of {{total}} employees"
+  }
+}

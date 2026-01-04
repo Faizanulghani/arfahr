@@ -1,0 +1,35 @@
+{
+  "shift": {
+    "title": "Shift Management",
+    "searchPlaceholder": "Search shifts...",
+    "addShift": "+ Add Shift",
+
+    "stats": {
+      "totalShifts": "Total Shifts",
+      "totalEmployees": "Total Employees",
+      "assigned": "Assigned",
+      "unassigned": "Unassigned"
+    },
+
+    "form": {
+      "createTitle": "Create Shift",
+      "editTitle": "Edit Shift",
+      "shiftName": "Shift Name",
+      "breakDuration": "Break Duration",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "daysOfWeek": "Days of Week",
+      "assignEmployees": "Assign Employees",
+      "createButton": "Create Shift",
+      "updateButton": "Update Shift"
+    },
+
+    "card": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "break": "Break",
+      "days": "Days",
+      "employees": "Employees"
+    }
+  }
+}

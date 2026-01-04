@@ -13,7 +13,11 @@ const ViewEmployeePage = () => {
 
   useEffect(() => {
     const fetchEmployee = async () => {
-      const { data, error } = await supabase.from("employees").select("*").eq("id", id).single();
+      const { data, error } = await supabase
+        .from("employees")
+        .select("*")
+        .eq("id", id)
+        .single();
       if (!error) setEmployee(data);
       else navigate("/employee-management");
     };
@@ -25,7 +29,11 @@ const ViewEmployeePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="max-w-3xl mx-auto py-10">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 flex items-center space-x-2">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-4 flex items-center space-x-2"
+        >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
         </Button>
@@ -34,7 +42,9 @@ const ViewEmployeePage = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <User className="h-6 w-6" />
-              <span>{employee.first_name} {employee.last_name}</span>
+              <span>
+                {employee.first_name} {employee.last_name}
+              </span>
             </CardTitle>
           </CardHeader>
 
@@ -47,14 +57,32 @@ const ViewEmployeePage = () => {
               <Field label="Salary" value={employee.salary} />
               <Field label="Joining Date" value={employee.joining_date} />
               <Field label="Employment Type" value={employee.employment_type} />
-              <Field label="Status" value={<Badge variant={employee.status === 'active' ? 'default' : 'secondary'}>{employee.status}</Badge>} />
+              <Field
+                label="Status"
+                value={
+                  <Badge
+                    variant={
+                      employee.status === "active" ? "default" : "secondary"
+                    }
+                  >
+                    {employee.status}
+                  </Badge>
+                }
+              />
             </div>
 
             <Field label="Address" value={employee.address} full />
-            <Field label="Emergency Contact" value={employee.emergency_contact} />
+            <Field
+              label="Emergency Contact"
+              value={employee.emergency_contact}
+            />
             <Field label="Emergency Phone" value={employee.emergency_phone} />
             {employee.fingerprint_id && (
-              <Field label="Fingerprint ID" value={employee.fingerprint_id} full />
+              <Field
+                label="Fingerprint ID"
+                value={employee.fingerprint_id}
+                full
+              />
             )}
           </CardContent>
         </Card>
@@ -63,10 +91,20 @@ const ViewEmployeePage = () => {
   );
 };
 
-const Field = ({ label, value, full = false }: { label: string; value: any; full?: boolean }) => (
+const Field = ({
+  label,
+  value,
+  full = false,
+}: {
+  label: string;
+  value: any;
+  full?: boolean;
+}) => (
   <div className={full ? "col-span-full" : ""}>
     <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
-    <p className="text-sm text-gray-800 bg-gray-100 rounded p-2">{value || "-"}</p>
+    <p className="text-sm text-gray-800 bg-gray-100 rounded p-2">
+      {value || "-"}
+    </p>
   </div>
 );
 

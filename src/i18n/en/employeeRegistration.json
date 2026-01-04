@@ -1,0 +1,43 @@
+{
+  "heading": "Add new employees to the ArfaExpress attendance system",
+  "employeeRegistration": {
+    "title": "New Employee Registration",
+    "description": "Enter details and register 10 fingerprints."
+  },
+  "form": {
+    "firstName": "First Name *",
+    "lastName": "Last Name *",
+    "email": "Email *",
+    "phone": "Phone *",
+    "password": "Account Password *",
+    "position": "Position *",
+    "department": "Department *",
+    "salary": "Salary",
+    "joiningDate": "Joining Date *"
+  },
+  "biometric": {
+    "title": "Fingerprint Registration",
+    "captured": "{{count}} / 10 Captured",
+    "waiting": "Waiting...",
+    "scanFinger": "Scan Finger #{{number}}",
+    "ready": "10 Fingers Ready ✅",
+    "fingerCaptured": "Finger {{number}} Captured ✅",
+    "scanNext": "Scan next finger.",
+    "allReady": "All 10 fingers ready!"
+  },
+  "terms": {
+    "agree": "I agree to the terms and conditions *"
+  },
+  "buttons": {
+    "saving": "Saving...",
+    "register": "Register Employee"
+  },
+  "toast": {
+    "error": "Error",
+    "scanAtLeastOne": "Scan at least 1 finger.",
+    "successTitle": "✅ Success",
+    "employeeRegistered": "Employee Registered Successfully in Database!",
+    "registrationFailed": "❌ Registration Failed",
+    "somethingWentWrong": "Something went wrong"
+  }
+}

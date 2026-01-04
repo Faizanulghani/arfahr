@@ -3,7 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Users,
@@ -33,7 +39,15 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import i18n from "@/i18n/index";
+import { t } from "i18next";
 
 // ===== Types =====
 type Employee = {
@@ -87,10 +101,15 @@ type SalaryStructure = {
 
 // ===== Helpers =====
 const toCurrency = (n: number, currency = "USD") =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n || 0);
+  new Intl.NumberFormat("en-US", { style: "currency", currency }).format(
+    n || 0
+  );
 
 const sum = (obj?: Record<string, number> | null) =>
-  Object.values(obj || {}).reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
+  Object.values(obj || {}).reduce(
+    (a, b) => a + (Number.isFinite(b) ? b : 0),
+    0
+  );
 
 const computeGrossNet = (s: {
   basic_salary: number;
@@ -166,6 +185,14 @@ const ManagerPortal = () => {
     is_active: true,
   });
 
+  const [lang, setLang] = useState(i18n.language || "en");
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng); // this switches language at runtime
+    setLang(lng);
+    localStorage.setItem("lang", lng);
+  };
+
   // Live computations
   const { gross, net, overtimePay } = computeGrossNet({
     basic_salary: Number(salaryForm.basic_salary || 0),
@@ -190,7 +217,8 @@ const ManagerPortal = () => {
     const init = async () => {
       setLoading(true);
 
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
       if (sessionError || !sessionData.session?.user) {
         if (!cancelled) navigate("/login");
         return;
@@ -240,9 +268,11 @@ const ManagerPortal = () => {
 
     init();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session?.user) navigate("/login");
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session?.user) navigate("/login");
+      }
+    );
 
     return () => {
       cancelled = true;
@@ -298,7 +328,10 @@ const ManagerPortal = () => {
   // ---- Logout ----
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast({ title: "Logged Out", description: "You have been successfully logged out" });
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out",
+    });
     navigate("/login");
   };
 
@@ -309,13 +342,18 @@ const ManagerPortal = () => {
     [attendanceRecords, todayISO]
   );
 
-  const presentCount = todayAttendance.filter((r) => r.status === "present").length;
+  const presentCount = todayAttendance.filter(
+    (r) => r.status === "present"
+  ).length;
   const lateCount = todayAttendance.filter((r) => r.status === "late").length;
-  const absentCount = Math.max(0, employees.length - (presentCount + lateCount));
+  const absentCount = Math.max(
+    0,
+    employees.length - (presentCount + lateCount)
+  );
 
   const managerStats = [
     {
-      title: "Team Members",
+      title: t("managerPortal:managerStats.teamMembers"),
       value: employees.length.toString(),
       change: "+2 this month",
       icon: Users,
@@ -323,15 +361,17 @@ const ManagerPortal = () => {
       bgColor: "bg-blue-50",
     },
     {
-      title: "Present Today",
+      title: t("managerPortal:managerStats.presentToday"),
       value: presentCount.toString(),
-      change: `${((presentCount / Math.max(1, employees.length)) * 100).toFixed(1)}%`,
+      change: `${((presentCount / Math.max(1, employees.length)) * 100).toFixed(
+        1
+      )}%`,
       icon: CheckCircle,
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
-      title: "Late Arrivals",
+      title: t("managerPortal:managerStats.lateArrivals"),
       value: lateCount.toString(),
       change: "-2 from yesterday",
       icon: Clock,
@@ -339,7 +379,7 @@ const ManagerPortal = () => {
       bgColor: "bg-orange-50",
     },
     {
-      title: "Absent",
+      title: t("managerPortal:managerStats.absent"),
       value: absentCount.toString(),
       change: "—",
       icon: Calendar,
@@ -349,9 +389,21 @@ const ManagerPortal = () => {
   ];
 
   const teamPerformance = [
-    { name: "On-time Rate", value: "92%", trend: "+3%" },
-    { name: "Productivity", value: "88%", trend: "+5%" },
-    { name: "Team Satisfaction", value: "94%", trend: "+2%" },
+    {
+      name: t("managerPortal:teamPerformance.onTimeRate"),
+      value: "92%",
+      trend: "+3%",
+    },
+    {
+      name: t("managerPortal:teamPerformance.productivity"),
+      value: "88%",
+      trend: "+5%",
+    },
+    {
+      name: t("managerPortal:teamPerformance.teamSatisfaction"),
+      value: "94%",
+      trend: "+2%",
+    },
   ];
 
   // ============================================================
@@ -394,7 +446,11 @@ const ManagerPortal = () => {
 
   const saveEmployee = async () => {
     if (!empForm.first_name || !empForm.email) {
-      toast({ title: "Missing data", description: "First name and email are required", variant: "destructive" });
+      toast({
+        title: "Missing data",
+        description: "First name and email are required",
+        variant: "destructive",
+      });
       return;
     }
     if (editingEmployee) {
@@ -436,7 +492,10 @@ const ManagerPortal = () => {
   };
 
   const deleteEmployee = async (emp: Employee) => {
-    const { error } = await supabase.from("employees").delete().eq("id", emp.id);
+    const { error } = await supabase
+      .from("employees")
+      .delete()
+      .eq("id", emp.id);
     if (error) {
       toast({ title: "Delete failed", variant: "destructive" });
     } else {
@@ -450,7 +509,11 @@ const ManagerPortal = () => {
   // ============================================================
   const sendNotification = async () => {
     if (!notifEmployeeId || !notifMessage.trim()) {
-      toast({ title: "Missing data", description: "Select an employee and enter a message", variant: "destructive" });
+      toast({
+        title: "Missing data",
+        description: "Select an employee and enter a message",
+        variant: "destructive",
+      });
       return;
     }
     const { error } = await supabase.from("notifications").insert({
@@ -470,7 +533,10 @@ const ManagerPortal = () => {
   };
 
   const markNotificationRead = async (id: string) => {
-    const { error } = await supabase.from("notifications").update({ read: true }).eq("id", id);
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("id", id);
     if (!error) fetchNotifications();
   };
 
@@ -479,7 +545,11 @@ const ManagerPortal = () => {
   // ============================================================
   const saveSalary = async () => {
     if (!salaryForm.employee_id || !salaryForm.employee_name) {
-      toast({ title: "Missing data", description: "Employee is required", variant: "destructive" });
+      toast({
+        title: "Missing data",
+        description: "Employee is required",
+        variant: "destructive",
+      });
       return;
     }
     const { gross, net } = computeGrossNet({
@@ -559,21 +629,40 @@ const ManagerPortal = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                Manager Portal
+                {t("managerPortal:manager.portalTitle")}
               </h1>
               <p className="text-sm text-gray-600">
-                Welcome back, {manager.first_name} {manager.last_name}!
+                {t("managerPortal:manager.welcome")}, {manager.first_name}{" "}
+                {manager.last_name}!
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-sm text-gray-600">Current Time</p>
-              <p className="font-semibold">{currentTime.toLocaleTimeString()}</p>
+            <div className="flex items-center space-x-3">
+              <select
+                value={lang}
+                onChange={(e) => changeLanguage(e.target.value)}
+                className="border rounded px-2 py-1 bg-white"
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
             </div>
-            <Button variant="outline" onClick={handleLogout} className="flex items-center space-x-2">
+            <div className="text-right">
+              <p className="text-sm text-gray-600">
+                {t("managerPortal:manager.currentTime")}
+              </p>
+              <p className="font-semibold">
+                {currentTime.toLocaleTimeString()}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="flex items-center space-x-2"
+            >
               <LogOut className="h-4 w-4" />
-              <span>Logout</span>
+              <span>{t("managerPortal:manager.logout")}</span>
             </Button>
           </div>
         </div>
@@ -583,11 +672,16 @@ const ManagerPortal = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {managerStats.map((stat, i) => (
-            <Card key={i} className="hover:shadow-lg transition-all duration-300 hover:scale-105">
+            <Card
+              key={i}
+              className="hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {stat.title}
+                    </p>
                     <p className="text-3xl font-bold">{stat.value}</p>
                     <Badge variant="secondary" className="mt-1">
                       {stat.change}
@@ -609,9 +703,11 @@ const ManagerPortal = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <TrendingUp className="h-5 w-5" />
-                <span>Team Performance</span>
+                <span>{t("managerPortal:dashboard.teamPerformanceTitle")}</span>
               </CardTitle>
-              <CardDescription>Key performance metrics for your team</CardDescription>
+              <CardDescription>
+                {t("managerPortal:dashboard.teamPerformanceDescription")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -619,9 +715,14 @@ const ManagerPortal = () => {
                   <div key={i} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{metric.name}</p>
-                      <p className="text-2xl font-bold text-green-600">{metric.value}</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {metric.value}
+                      </p>
                     </div>
-                    <Badge variant="secondary" className="bg-green-50 text-green-700">
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-50 text-green-700"
+                    >
                       {metric.trend}
                     </Badge>
                   </div>
@@ -637,9 +738,15 @@ const ManagerPortal = () => {
                 <Users className="h-5 w-5" />
                 <span>Team Overview</span>
               </CardTitle>
-              <CardDescription>Current status of your team members</CardDescription>
+              <CardDescription>
+                Current status of your team members
+              </CardDescription>
               <div className="mt-2 flex gap-2">
-                <Button size="sm" onClick={openCreateEmployee} className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={openCreateEmployee}
+                  className="flex items-center gap-2"
+                >
                   <PlusCircle className="h-4 w-4" /> Add Employee
                 </Button>
                 <Button
@@ -650,7 +757,9 @@ const ManagerPortal = () => {
                 >
                   <Bell className="h-4 w-4" />
                   Notifications
-                  {unreadCount > 0 && <Badge className="ml-2">{unreadCount}</Badge>}
+                  {unreadCount > 0 && (
+                    <Badge className="ml-2">{unreadCount}</Badge>
+                  )}
                 </Button>
                 <Button
                   size="sm"
@@ -665,9 +774,14 @@ const ManagerPortal = () => {
             <CardContent>
               <div className="space-y-4">
                 {employees.slice(0, 5).map((emp) => {
-                  const record = todayAttendance.find((r) => r.employee_id === emp.id);
+                  const record = todayAttendance.find(
+                    (r) => r.employee_id === emp.id
+                  );
                   return (
-                    <div key={emp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={emp.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                           {emp.first_name?.[0] || "?"}
@@ -677,18 +791,33 @@ const ManagerPortal = () => {
                           <p className="font-medium">
                             {emp.first_name} {emp.last_name}
                           </p>
-                          <p className="text-sm text-gray-600">{emp.position || "—"}</p>
+                          <p className="text-sm text-gray-600">
+                            {emp.position || "—"}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge>
-                          {record ? (record.status === "late" ? "Late" : "Present") : "Absent"}
+                          {record
+                            ? record.status === "late"
+                              ? "Late"
+                              : "Present"
+                            : "Absent"}
                         </Badge>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/employees/${emp.id}`)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/employees/${emp.id}`)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                         {/* NEW: quick edit / delete */}
-                        <Button variant="outline" size="sm" onClick={() => openEditEmployee(emp)} className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditEmployee(emp)}
+                          className="flex gap-1"
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
@@ -703,7 +832,11 @@ const ManagerPortal = () => {
                     </div>
                   );
                 })}
-                {employees.length === 0 && <div className="text-sm text-gray-500">No team members yet.</div>}
+                {employees.length === 0 && (
+                  <div className="text-sm text-gray-500">
+                    No team members yet.
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -722,7 +855,10 @@ const ManagerPortal = () => {
               {attendanceRecords.slice(0, 6).map((rec) => {
                 const emp = employees.find((e) => e.id === rec.employee_id);
                 return (
-                  <div key={rec.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={rec.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       <div
                         className={`w-3 h-3 rounded-full ${
@@ -735,7 +871,9 @@ const ManagerPortal = () => {
                       />
                       <div>
                         <p className="font-medium">
-                          {emp ? `${emp.first_name} ${emp.last_name}` : "Unknown Employee"}
+                          {emp
+                            ? `${emp.first_name} ${emp.last_name}`
+                            : "Unknown Employee"}
                         </p>
                         <p className="text-sm text-gray-600">
                           {rec.check_out ? "Checked out" : "Checked in"} at{" "}
@@ -748,7 +886,9 @@ const ManagerPortal = () => {
                 );
               })}
               {attendanceRecords.length === 0 && (
-                <div className="text-sm text-gray-500">No recent activity yet.</div>
+                <div className="text-sm text-gray-500">
+                  No recent activity yet.
+                </div>
               )}
             </div>
           </CardContent>
@@ -761,18 +901,26 @@ const ManagerPortal = () => {
               <DollarSign className="h-5 w-5" />
               <span>Team Payroll (Recent)</span>
             </CardTitle>
-            <CardDescription>Recently created salary structures</CardDescription>
+            <CardDescription>
+              Recently created salary structures
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {salaries.slice(0, 8).map((s) => (
-              <div key={s.id} className="border p-3 rounded flex items-center justify-between">
+              <div
+                key={s.id}
+                className="border p-3 rounded flex items-center justify-between"
+              >
                 <div>
                   <p className="font-semibold">{s.employee_name}</p>
-                  <p className="text-xs text-gray-500">Effective: {s.effective_date}</p>
+                  <p className="text-xs text-gray-500">
+                    Effective: {s.effective_date}
+                  </p>
                   <p className="text-sm text-gray-700">
-                    Base: {toCurrency(s.basic_salary, s.currency)} • Overtime: {toCurrency(overtimePay, s.currency)} •
-                    Gross: <strong>{toCurrency(s.gross_salary, s.currency)}</strong> • Net:{" "}
-                    <strong>{toCurrency(s.net_salary, s.currency)}</strong>
+                    Base: {toCurrency(s.basic_salary, s.currency)} • Overtime:{" "}
+                    {toCurrency(overtimePay, s.currency)} • Gross:{" "}
+                    <strong>{toCurrency(s.gross_salary, s.currency)}</strong> •
+                    Net: <strong>{toCurrency(s.net_salary, s.currency)}</strong>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -781,7 +929,11 @@ const ManagerPortal = () => {
                 </div>
               </div>
             ))}
-            {salaries.length === 0 && <div className="text-sm text-gray-500">No salary structures yet.</div>}
+            {salaries.length === 0 && (
+              <div className="text-sm text-gray-500">
+                No salary structures yet.
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -798,25 +950,35 @@ const ManagerPortal = () => {
             {notifications.slice(0, 10).map((n) => {
               const emp = employees.find((e) => e.id === n.employee_id);
               return (
-                <div key={n.id} className="border p-3 rounded flex items-center justify-between">
+                <div
+                  key={n.id}
+                  className="border p-3 rounded flex items-center justify-between"
+                >
                   <div>
                     <p className="font-medium">{n.message}</p>
                     <p className="text-xs text-gray-500">
                       {emp ? `${emp.first_name} ${emp.last_name}` : "Unknown"} •{" "}
-                      {n.created_at ? new Date(n.created_at).toLocaleString() : ""}
+                      {n.created_at
+                        ? new Date(n.created_at).toLocaleString()
+                        : ""}
                     </p>
                   </div>
                   {n.read ? (
                     <Badge variant="secondary">Read</Badge>
                   ) : (
-                    <Button size="sm" onClick={() => markNotificationRead(n.id)}>
+                    <Button
+                      size="sm"
+                      onClick={() => markNotificationRead(n.id)}
+                    >
                       Mark read
                     </Button>
                   )}
                 </div>
               );
             })}
-            {notifications.length === 0 && <div className="text-sm text-gray-500">No notifications yet.</div>}
+            {notifications.length === 0 && (
+              <div className="text-sm text-gray-500">No notifications yet.</div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -827,9 +989,13 @@ const ManagerPortal = () => {
       <AlertDialog open={showEmployeeModal} onOpenChange={setShowEmployeeModal}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{editingEmployee ? "Edit Employee" : "Add Employee"}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {editingEmployee ? "Edit Employee" : "Add Employee"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {editingEmployee ? "Update employee details" : "Create a new employee"}
+              {editingEmployee
+                ? "Update employee details"
+                : "Create a new employee"}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -838,7 +1004,9 @@ const ManagerPortal = () => {
               <label className="text-sm">First Name</label>
               <Input
                 value={empForm.first_name || ""}
-                onChange={(e) => setEmpForm((f) => ({ ...f, first_name: e.target.value }))}
+                onChange={(e) =>
+                  setEmpForm((f) => ({ ...f, first_name: e.target.value }))
+                }
                 placeholder="First name"
               />
             </div>
@@ -846,7 +1014,9 @@ const ManagerPortal = () => {
               <label className="text-sm">Last Name</label>
               <Input
                 value={empForm.last_name || ""}
-                onChange={(e) => setEmpForm((f) => ({ ...f, last_name: e.target.value }))}
+                onChange={(e) =>
+                  setEmpForm((f) => ({ ...f, last_name: e.target.value }))
+                }
                 placeholder="Last name"
               />
             </div>
@@ -854,7 +1024,9 @@ const ManagerPortal = () => {
               <label className="text-sm">Email</label>
               <Input
                 value={empForm.email || ""}
-                onChange={(e) => setEmpForm((f) => ({ ...f, email: e.target.value }))}
+                onChange={(e) =>
+                  setEmpForm((f) => ({ ...f, email: e.target.value }))
+                }
                 placeholder="name@company.com"
                 type="email"
               />
@@ -863,7 +1035,9 @@ const ManagerPortal = () => {
               <label className="text-sm">Position</label>
               <Input
                 value={empForm.position || ""}
-                onChange={(e) => setEmpForm((f) => ({ ...f, position: e.target.value }))}
+                onChange={(e) =>
+                  setEmpForm((f) => ({ ...f, position: e.target.value }))
+                }
                 placeholder="e.g., Developer"
               />
             </div>
@@ -887,32 +1061,47 @@ const ManagerPortal = () => {
               <Input
                 type="date"
                 value={empForm.joining_date || todayStr()}
-                onChange={(e) => setEmpForm((f) => ({ ...f, joining_date: e.target.value }))}
+                onChange={(e) =>
+                  setEmpForm((f) => ({ ...f, joining_date: e.target.value }))
+                }
               />
             </div>
           </div>
 
           <AlertDialogFooter>
-            <Button variant="outline" onClick={() => setShowEmployeeModal(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowEmployeeModal(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={saveEmployee}>{editingEmployee ? "Update" : "Create"}</Button>
+            <Button onClick={saveEmployee}>
+              {editingEmployee ? "Update" : "Create"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* Send Notification */}
-      <AlertDialog open={showNotificationModal} onOpenChange={setShowNotificationModal}>
+      <AlertDialog
+        open={showNotificationModal}
+        onOpenChange={setShowNotificationModal}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Send Notification</AlertDialogTitle>
-            <AlertDialogDescription>Deliver a message to a team member</AlertDialogDescription>
+            <AlertDialogDescription>
+              Deliver a message to a team member
+            </AlertDialogDescription>
           </AlertDialogHeader>
 
           <div className="space-y-3 py-2">
             <div>
               <label className="text-sm">Employee</label>
-              <Select value={notifEmployeeId || ""} onValueChange={(v) => setNotifEmployeeId(v)}>
+              <Select
+                value={notifEmployeeId || ""}
+                onValueChange={(v) => setNotifEmployeeId(v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee" />
                 </SelectTrigger>
@@ -936,10 +1125,16 @@ const ManagerPortal = () => {
           </div>
 
           <AlertDialogFooter>
-            <Button variant="outline" onClick={() => setShowNotificationModal(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowNotificationModal(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={sendNotification} className="flex items-center gap-2">
+            <Button
+              onClick={sendNotification}
+              className="flex items-center gap-2"
+            >
               <SendHorizonal className="h-4 w-4" />
               Send
             </Button>
@@ -967,7 +1162,9 @@ const ManagerPortal = () => {
                   setSalaryForm((f) => ({
                     ...f,
                     employee_id: v,
-                    employee_name: emp ? `${emp.first_name} ${emp.last_name}` : "",
+                    employee_name: emp
+                      ? `${emp.first_name} ${emp.last_name}`
+                      : "",
                   }));
                 }}
               >
@@ -989,14 +1186,21 @@ const ManagerPortal = () => {
               <Input
                 type="number"
                 value={String(salaryForm.basic_salary ?? 0)}
-                onChange={(e) => setSalaryForm((f) => ({ ...f, basic_salary: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setSalaryForm((f) => ({
+                    ...f,
+                    basic_salary: Number(e.target.value),
+                  }))
+                }
               />
             </div>
             <div>
               <label className="text-sm">Currency</label>
               <Input
                 value={salaryForm.currency || "USD"}
-                onChange={(e) => setSalaryForm((f) => ({ ...f, currency: e.target.value }))}
+                onChange={(e) =>
+                  setSalaryForm((f) => ({ ...f, currency: e.target.value }))
+                }
               />
             </div>
 
@@ -1005,7 +1209,12 @@ const ManagerPortal = () => {
               <Input
                 type="number"
                 value={String(salaryForm.hours_worked ?? 0)}
-                onChange={(e) => setSalaryForm((f) => ({ ...f, hours_worked: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setSalaryForm((f) => ({
+                    ...f,
+                    hours_worked: Number(e.target.value),
+                  }))
+                }
               />
             </div>
             <div>
@@ -1013,7 +1222,12 @@ const ManagerPortal = () => {
               <Input
                 type="number"
                 value={String(salaryForm.hourly_rate ?? 0)}
-                onChange={(e) => setSalaryForm((f) => ({ ...f, hourly_rate: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setSalaryForm((f) => ({
+                    ...f,
+                    hourly_rate: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
@@ -1022,7 +1236,12 @@ const ManagerPortal = () => {
               <Input
                 type="number"
                 value={String(salaryForm.overtime_hours ?? 0)}
-                onChange={(e) => setSalaryForm((f) => ({ ...f, overtime_hours: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setSalaryForm((f) => ({
+                    ...f,
+                    overtime_hours: Number(e.target.value),
+                  }))
+                }
               />
             </div>
             <div>
@@ -1030,7 +1249,12 @@ const ManagerPortal = () => {
               <Input
                 type="number"
                 value={String(salaryForm.overtime_rate ?? 0)}
-                onChange={(e) => setSalaryForm((f) => ({ ...f, overtime_rate: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setSalaryForm((f) => ({
+                    ...f,
+                    overtime_rate: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
@@ -1043,7 +1267,10 @@ const ManagerPortal = () => {
                 onChange={(e) =>
                   setSalaryForm((f) => ({
                     ...f,
-                    allowances: { ...(f.allowances || {}), housing: Number(e.target.value) },
+                    allowances: {
+                      ...(f.allowances || {}),
+                      housing: Number(e.target.value),
+                    },
                   }))
                 }
               />
@@ -1052,11 +1279,16 @@ const ManagerPortal = () => {
               <label className="text-sm">Allowances — Transport</label>
               <Input
                 type="number"
-                value={String((salaryForm.allowances?.transport as number) ?? 0)}
+                value={String(
+                  (salaryForm.allowances?.transport as number) ?? 0
+                )}
                 onChange={(e) =>
                   setSalaryForm((f) => ({
                     ...f,
-                    allowances: { ...(f.allowances || {}), transport: Number(e.target.value) },
+                    allowances: {
+                      ...(f.allowances || {}),
+                      transport: Number(e.target.value),
+                    },
                   }))
                 }
               />
@@ -1071,7 +1303,10 @@ const ManagerPortal = () => {
                 onChange={(e) =>
                   setSalaryForm((f) => ({
                     ...f,
-                    deductions: { ...(f.deductions || {}), tax: Number(e.target.value) },
+                    deductions: {
+                      ...(f.deductions || {}),
+                      tax: Number(e.target.value),
+                    },
                   }))
                 }
               />
@@ -1084,7 +1319,10 @@ const ManagerPortal = () => {
                 onChange={(e) =>
                   setSalaryForm((f) => ({
                     ...f,
-                    deductions: { ...(f.deductions || {}), pension: Number(e.target.value) },
+                    deductions: {
+                      ...(f.deductions || {}),
+                      pension: Number(e.target.value),
+                    },
                   }))
                 }
               />
@@ -1095,7 +1333,12 @@ const ManagerPortal = () => {
               <Input
                 type="date"
                 value={salaryForm.effective_date || todayStr()}
-                onChange={(e) => setSalaryForm((f) => ({ ...f, effective_date: e.target.value }))}
+                onChange={(e) =>
+                  setSalaryForm((f) => ({
+                    ...f,
+                    effective_date: e.target.value,
+                  }))
+                }
               />
             </div>
 
@@ -1103,11 +1346,15 @@ const ManagerPortal = () => {
             <div className="md:col-span-2 rounded-md border p-3 bg-gray-50">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Overtime Pay</span>
-                <strong>{toCurrency(overtimePay, salaryForm.currency || "USD")}</strong>
+                <strong>
+                  {toCurrency(overtimePay, salaryForm.currency || "USD")}
+                </strong>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Gross</span>
-                <strong>{toCurrency(gross, salaryForm.currency || "USD")}</strong>
+                <strong>
+                  {toCurrency(gross, salaryForm.currency || "USD")}
+                </strong>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Net</span>

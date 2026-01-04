@@ -2,9 +2,19 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import EmployeeForm from "@/components/EmployeeForm";
+import i18n from "@/i18n/index";
+import { useState } from "react";
+import { t } from "i18next";
 
 const EmployeeRegistration = () => {
   const navigate = useNavigate();
+  const [lang, setLang] = useState(i18n.language || "en");
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng); // this switches language at runtime
+    setLang(lng);
+    localStorage.setItem("lang", lng);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -21,8 +31,18 @@ const EmployeeRegistration = () => {
               <span>Back</span>
             </Button>
             <div className="flex space-x-3">
+              <div className="flex items-center space-x-3">
+                <select
+                  value={lang}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className="border rounded px-2 py-1 bg-white"
+                >
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
               <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                Dashboard
+                {t("employeeManagement:navbar.dashboard")}
               </Button>
               <Button onClick={() => navigate("/attendance")}>
                 Attendance
@@ -39,7 +59,7 @@ const EmployeeRegistration = () => {
             Employee Registration
           </h1>
           <p className="text-xl text-gray-600">
-            Add new employees to the ArfaExpress attendance system
+            {t("employeeRegistration:heading")}
           </p>
         </div>
 

@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import useLogout from "@/api/useLogout";
 import i18n from "@/i18n/index";
+import { t } from "i18next";
 
 const EmployeeManagement = () => {
   const navigate = useNavigate();
@@ -106,7 +107,9 @@ const EmployeeManagement = () => {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Employee Management
                 </h1>
-                <p className="text-sm text-gray-600">Manage your workforce</p>
+                <p className="text-sm text-gray-600">
+                  {t("employeeManagement:app.subtitle")}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -121,10 +124,11 @@ const EmployeeManagement = () => {
                 </select>
               </div>
               <Button onClick={() => navigate("/dashboard")} variant="outline">
-                Dashboard
+                {t("employeeManagement:navbar.dashboard")}
               </Button>
               <Button variant="outline" onClick={logout}>
-                <LogOut className="h-4 w-4" /> Logout
+                <LogOut className="h-4 w-4" />{" "}
+                {t("employeeManagement:navbar.logout")}
               </Button>
             </div>
           </div>
@@ -137,7 +141,7 @@ const EmployeeManagement = () => {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search employees..."
+                placeholder={t("employeeManagement:search.placeholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -152,7 +156,9 @@ const EmployeeManagement = () => {
             >
               {departments.map((dept) => (
                 <option key={dept} value={dept}>
-                  {dept === "all" ? "All Departments" : dept}
+                  {dept === "all"
+                    ? t("employeeManagement:filters.allDepartments")
+                    : dept}
                 </option>
               ))}
             </select>
@@ -160,7 +166,8 @@ const EmployeeManagement = () => {
               onClick={() => navigate("/employee-registration")}
               className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
             >
-              <UserPlus className="h-4 w-4 mr-2" /> Add Employee
+              <UserPlus className="h-4 w-4 mr-2" />{" "}
+              {t("employeeManagement:buttons.addEmployee")}
             </Button>
           </div>
         </div>
@@ -170,7 +177,9 @@ const EmployeeManagement = () => {
             <CardContent className="pt-6">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm font-medium">Total</p>
+                  <p className="text-sm font-medium">
+                    {t("employeeManagement:stats.total")}
+                  </p>
                   <p className="text-3xl font-bold">{employees.length}</p>
                 </div>
                 <Users className="h-12 w-12 text-blue-600" />
@@ -181,7 +190,9 @@ const EmployeeManagement = () => {
             <CardContent className="pt-6">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm font-medium">Active</p>
+                  <p className="text-sm font-medium">
+                    {t("employeeManagement:stats.active")}
+                  </p>
                   <p className="text-3xl font-bold text-green-600">
                     {employees.filter((e) => e.status === "active").length}
                   </p>
@@ -194,7 +205,9 @@ const EmployeeManagement = () => {
             <CardContent className="pt-6">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm font-medium">Departments</p>
+                  <p className="text-sm font-medium">
+                    {t("employeeManagement:stats.departments")}
+                  </p>
                   <p className="text-3xl font-bold text-purple-600">
                     {departments.length - 1}
                   </p>
@@ -207,7 +220,9 @@ const EmployeeManagement = () => {
             <CardContent className="pt-6">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm font-medium">This Month</p>
+                  <p className="text-sm font-medium">
+                    {t("employeeManagement:stats.thisMonth")}
+                  </p>
                   <p className="text-3xl font-bold text-orange-600">+3</p>
                 </div>
                 <UserPlus className="h-12 w-12 text-orange-600" />
@@ -219,10 +234,14 @@ const EmployeeManagement = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Users className="h-5 w-5" /> <span>Employee Directory</span>
+              <Users className="h-5 w-5" />{" "}
+              <span>{t("employeeManagement:directory.title")}</span>
             </CardTitle>
             <CardDescription>
-              Showing {filteredEmployees.length} of {employees.length} employees
+              {t("employeeManagement:directory.showing", {
+                shown: filteredEmployees.length,
+                total: employees.length,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>

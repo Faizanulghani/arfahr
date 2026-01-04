@@ -1,0 +1,24 @@
+{
+  "manager": {
+    "portalTitle": "Manager Portal",
+    "welcome": "Welcome back",
+    "currentTime": "Current Time",
+    "logout": "Logout"
+  },
+
+  "managerStats": {
+    "teamMembers": "Team Members",
+    "presentToday": "Present Today",
+    "lateArrivals": "Late Arrivals",
+    "absent": "Absent"
+  },
+  "teamPerformance": {
+    "onTimeRate": "On-time Rate",
+    "productivity": "Productivity",
+    "teamSatisfaction": "Team Satisfaction"
+  },
+  "dashboard": {
+    "teamPerformanceTitle": "Team Performance",
+    "teamPerformanceDescription": "Key performance metrics for your team"
+  }
+}
