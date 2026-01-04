@@ -19,6 +19,11 @@
   },
   "dashboard": {
     "teamPerformanceTitle": "Team Performance",
-    "teamPerformanceDescription": "Key performance metrics for your team"
+    "teamPerformanceDescription": "Key performance metrics for your team",
+    "teamOverviewTitle": "Team Overview",
+    "teamOverviewDescription": "Current status of your team members",
+    "addEmployee": "Add Employee",
+    "notifications": "Notifications",
+    "addSalary": "Add Salary"
   }
 }

@@ -1,0 +1,50 @@
+{
+  "employee": {
+    "title": "Employee Portal",
+    "welcome": "Welcome",
+    "currentTime": "Current Time",
+    "logout": "Logout"
+  },
+  "attendance": {
+    "title": "Attendance",
+    "description": "Mark your attendance for today",
+    "checkInTime": "Check-in Time",
+    "checkOutTime": "Check-out Time",
+    "notCheckedIn": "Not checked in",
+    "notCheckedOut": "Not checked out",
+    "checkInButton": "Check In (Biometric)",
+    "checkOutButton": "Check Out (Biometric)",
+    "todaySummary": "Today's Summary",
+    "status": "Status",
+    "present": "Present",
+    "absent": "Absent",
+    "hoursToday": "Hours Today",
+    "thisWeek": "This Week",
+    "breakTime": "Break Time",
+    "recentAttendance": "Recent Attendance",
+    "attendanceHistory": "Your attendance history",
+    "manualAttendance": "Manual Attendance",
+    "enterValidUserId": "Please enter a valid User ID"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Latest updates about payroll and attendance",
+    "noNotifications": "No notifications yet.",
+    "new": "New"
+  },
+  "shifts": {
+    "title": "Upcoming Shifts",
+    "loading": "Loading shifts...",
+    "noShifts": "No upcoming shifts assigned.",
+    "break": "Break",
+    "days": "Days"
+  },
+  "scanner": {
+    "fingerprintScanner": "Fingerprint Scanner",
+    "close": "Close",
+    "mode": "Mode",
+    "placeFinger": "Place your finger on the scanner",
+    "processing": "Processing...",
+    "ready": "Ready"
+  }
+}

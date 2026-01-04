@@ -15,6 +15,7 @@ import enEmployeeManagement from "./en/employeeManagement.json";
 import enEmployeeRegistration from "./en/employeeRegistration.json";
 import enShiftsManagement from "./en/shiftsManagement.json";
 import enManagerPortal from "./en/managerPortal.json";
+import enEmployeePortal from "./en/employeePortal.json";
 
 import frNavbar from "./fr/navbar.json";
 import frHeroSection from "./fr/herosection.json";
@@ -30,6 +31,7 @@ import frEmployeeManagement from "./fr/employeeManagement.json";
 import frEmployeeRegistration from "./fr/employeeRegistration.json";
 import frShiftsManagement from "./fr/shiftsManagement.json";
 import frManagerPortal from "./fr/managerPortal.json";
+import frEmployeePortal from "./fr/employeePortal.json";
 
 
 const lang = localStorage.getItem("lang") || "en";
@@ -50,7 +52,8 @@ i18n.use(initReactI18next).init({
       employeeManagement: enEmployeeManagement,
       employeeRegistration:enEmployeeRegistration,
       shiftsManagement:enShiftsManagement,
-      managerPortal: enManagerPortal
+      managerPortal: enManagerPortal,
+      emloyeePortal: enEmployeePortal
     },
     fr: {
       navbar: frNavbar,
@@ -66,7 +69,8 @@ i18n.use(initReactI18next).init({
       employeeManagement: frEmployeeManagement,
       employeeRegistration:frEmployeeRegistration,
       shiftsManagement:frShiftsManagement,
-      managerPortal: frManagerPortal
+      managerPortal: frManagerPortal,
+      emloyeePortal: frEmployeePortal
     }
   },
   lng: lang,

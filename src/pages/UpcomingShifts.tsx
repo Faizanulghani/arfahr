@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { t } from "i18next";
 
 interface Shift {
   id: string;
@@ -51,14 +52,14 @@ export default function UpcomingShifts() {
       )
       .eq("employee_id", empId);
 
-   if (!error && data) {
-  const mapped: Shift[] = data
-    .map((row) => row.shifts) // array of shifts from each row
-    .flat() // flatten into a single array
-    .filter((shift): shift is Shift => Boolean(shift)); // remove null/undefined
+    if (!error && data) {
+      const mapped: Shift[] = data
+        .map((row) => row.shifts) // array of shifts from each row
+        .flat() // flatten into a single array
+        .filter((shift): shift is Shift => Boolean(shift)); // remove null/undefined
 
-  setShifts(mapped);
-}
+      setShifts(mapped);
+    }
 
     setLoading(false);
   }
@@ -86,14 +87,14 @@ export default function UpcomingShifts() {
     <Card className="bg-white shadow rounded-xl mb-6">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-purple-700">
-          📅 Upcoming Shifts
+          📅 {t("emloyeePortal:shifts.title")}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-gray-500">Loading shifts...</p>
+          <p className="text-gray-500">{t("emloyeePortal:shifts.loading")}</p>
         ) : shifts.length === 0 ? (
-          <p className="text-gray-500">No upcoming shifts assigned.</p>
+          <p className="text-gray-500">{t("emloyeePortal:shifts.noShifts")}</p>
         ) : (
           <ScrollArea className="h-48 pr-2">
             <div className="space-y-3">
@@ -104,11 +105,13 @@ export default function UpcomingShifts() {
                 >
                   <p className="font-semibold text-purple-700">{shift.name}</p>
                   <p className="text-sm text-gray-600">
-                    {shift.start_time} - {shift.end_time} | Break:{" "}
+                    {shift.start_time} - {shift.end_time} |{" "}
+                    {t("emloyeePortal:shifts.break")}
                     {shift.break_duration} mins
                   </p>
                   <p className="text-xs text-gray-500">
-                    Days: {shift.days_of_week.join(", ")}
+                    {t("emloyeePortal:shifts.days")}:{" "}
+                    {shift.days_of_week.join(", ")}
                   </p>
                 </div>
               ))}

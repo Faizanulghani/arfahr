@@ -1,0 +1,50 @@
+{
+  "employee": {
+    "title": "Portail des employés",
+    "welcome": "Bienvenue",
+    "currentTime": "Heure actuelle",
+    "logout": "Se déconnecter"
+  },
+  "attendance": {
+    "title": "Présence",
+    "description": "Marquez votre présence pour aujourd'hui",
+    "checkInTime": "Heure d'arrivée",
+    "checkOutTime": "Heure de départ",
+    "notCheckedIn": "Non enregistré",
+    "notCheckedOut": "Non enregistré",
+    "checkInButton": "Pointer (Biométrique)",
+    "checkOutButton": "Pointer la sortie (Biométrique)",
+    "todaySummary": "Résumé d'aujourd'hui",
+    "status": "Statut",
+    "present": "Présent",
+    "absent": "Absent",
+    "hoursToday": "Heures aujourd'hui",
+    "thisWeek": "Cette semaine",
+    "breakTime": "Temps de pause",
+    "recentAttendance": "Présence récente",
+    "attendanceHistory": "Historique de votre présence",
+    "manualAttendance": "Présence manuelle",
+    "enterValidUserId": "Veuillez entrer un ID utilisateur valide"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Dernières mises à jour sur la paie et la présence",
+    "noNotifications": "Aucune notification pour le moment.",
+    "new": "Nouveau"
+  },
+  "shifts": {
+    "title": "Prochains horaires",
+    "loading": "Chargement des horaires...",
+    "noShifts": "Aucun horaire à venir assigné.",
+    "break": "Pause",
+    "days": "Jours"
+  },
+  "scanner": {
+    "fingerprintScanner": "Scanner d'empreintes digitales",
+    "close": "Fermer",
+    "mode": "Mode",
+    "placeFinger": "Placez votre doigt sur le scanner",
+    "processing": "Traitement...",
+    "ready": "Prêt"
+  }
+}

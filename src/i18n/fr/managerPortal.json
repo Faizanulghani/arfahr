@@ -18,6 +18,11 @@
   },
   "dashboard": {
     "teamPerformanceTitle": "Performance de l'équipe",
-    "teamPerformanceDescription": "Principaux indicateurs de performance de votre équipe"
+    "teamPerformanceDescription": "Principaux indicateurs de performance de votre équipe",
+    "teamOverviewTitle": "Aperçu de l'équipe",
+    "teamOverviewDescription": "Statut actuel de vos membres d'équipe",
+    "addEmployee": "Ajouter un employé",
+    "notifications": "Notifications",
+    "addSalary": "Ajouter un salaire"
   }
 }

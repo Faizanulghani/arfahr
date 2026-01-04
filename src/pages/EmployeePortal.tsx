@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import UpcomingShifts from "./UpcomingShifts";
+import i18n from "@/i18n/index";
+import { t } from "i18next";
 
 const EmployeePortal = () => {
   const navigate = useNavigate();
@@ -42,6 +44,13 @@ const EmployeePortal = () => {
   // stats state
   const [hoursToday, setHoursToday] = useState<string>("0h");
   const [hoursThisWeek, setHoursThisWeek] = useState<string>("0h");
+  const [lang, setLang] = useState(i18n.language || "en");
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng); // this switches language at runtime
+    setLang(lng);
+    localStorage.setItem("lang", lng);
+  };
 
   // UI helper: manual attendance input
   useEffect(() => {
@@ -482,16 +491,29 @@ const EmployeePortal = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Employee Portal
+                {t("emloyeePortal:employee.title")}
               </h1>
               <p className="text-sm text-gray-600">
-                Welcome, {user.first_name} {user.last_name}!
+                {t("emloyeePortal:employee.welcome")}, {user.first_name}{" "}
+                {user.last_name}!
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <select
+                value={lang}
+                onChange={(e) => changeLanguage(e.target.value)}
+                className="border rounded px-2 py-1 bg-white"
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
+            </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">Current Time</p>
+              <p className="text-sm text-gray-600">
+                {t("emloyeePortal:employee.currentTime")}
+              </p>
               <p className="font-semibold">
                 {currentTime.toLocaleTimeString()}
               </p>
@@ -502,7 +524,7 @@ const EmployeePortal = () => {
               className="flex items-center space-x-2"
             >
               <LogOut className="h-4 w-4" />
-              <span>Logout</span>
+              <span>{t("emloyeePortal:employee.logout")}</span>
             </Button>
           </div>
         </div>
@@ -515,26 +537,32 @@ const EmployeePortal = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Fingerprint className="h-6 w-6 text-purple-600" />
-                <span>Attendance</span>
+                <span>{t("emloyeePortal:attendance.title")}</span>
               </CardTitle>
-              <CardDescription>Mark your attendance for today</CardDescription>
+              <CardDescription>
+                {t("emloyeePortal:attendance.description")}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Check-in Time</p>
+                  <p className="text-sm text-gray-600">
+                    {t("emloyeePortal:attendance.checkInTime")}
+                  </p>
                   <p className="text-lg font-semibold">
                     {todayRecord?.check_in
                       ? new Date(todayRecord.check_in).toLocaleTimeString()
-                      : "Not checked in"}
+                      : t("emloyeePortal:attendance.notCheckedIn")}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Check-out Time</p>
+                  <p className="text-sm text-gray-600">
+                    {t("emloyeePortal:attendance.checkOutTime")}
+                  </p>
                   <p className="text-lg font-semibold">
                     {todayRecord?.check_out
                       ? new Date(todayRecord.check_out).toLocaleTimeString()
-                      : "Not checked out"}
+                      : t("emloyeePortal:attendance.notCheckedOut")}
                   </p>
                 </div>
               </div>
@@ -545,7 +573,8 @@ const EmployeePortal = () => {
                   disabled={isProcessingScan || Boolean(todayRecord?.check_in)}
                   className="flex-1 bg-gradient-to-r from-green-600 to-green-700"
                 >
-                  <Fingerprint className="h-4 w-4 mr-2" /> Check In (Biometric)
+                  <Fingerprint className="h-4 w-4 mr-2" />{" "}
+                  {t("emloyeePortal:attendance.checkInButton")}
                 </Button>
 
                 <Button
@@ -558,7 +587,8 @@ const EmployeePortal = () => {
                   variant="outline"
                   className="flex-1"
                 >
-                  <Fingerprint className="h-4 w-4 mr-2" /> Check Out (Biometric)
+                  <Fingerprint className="h-4 w-4 mr-2" />{" "}
+                  {t("emloyeePortal:attendance.checkOutButton")}
                 </Button>
               </div>
             </CardContent>
@@ -569,7 +599,7 @@ const EmployeePortal = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <MapPin className="h-6 w-6 text-blue-600" />
-                <span>Today's Summary</span>
+                <span>{t("emloyeePortal:attendance.todaySummary")}</span>
               </CardTitle>
               <CardDescription>
                 {new Date().toLocaleDateString("en-US", {
@@ -583,21 +613,31 @@ const EmployeePortal = () => {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Status</span>
+                  <span className="text-gray-600">
+                    {t("emloyeePortal:attendance.status")}
+                  </span>
                   <Badge variant={todayRecord ? "default" : "secondary"}>
-                    {todayRecord ? "Present" : "Absent"}
+                    {todayRecord
+                      ? t("emloyeePortal:attendance.present")
+                      : t("emloyeePortal:attendance.absent")}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Hours Today</span>
+                  <span className="text-gray-600">
+                    {t("emloyeePortal:attendance.hoursToday")}
+                  </span>
                   <span className="font-semibold">{hoursToday}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">This Week</span>
+                  <span className="text-gray-600">
+                    {t("emloyeePortal:attendance.thisWeek")}
+                  </span>
                   <span className="font-semibold">{hoursThisWeek}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Break Time</span>
+                  <span className="text-gray-600">
+                    {t("emloyeePortal:attendance.breakTime")}
+                  </span>
                   <span className="font-semibold">45min</span>
                 </div>
               </div>
@@ -610,9 +650,11 @@ const EmployeePortal = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Activity className="h-5 w-5" />
-              <span>Recent Attendance</span>
+              <span>{t("emloyeePortal:attendance.recentAttendance")}</span>
             </CardTitle>
-            <CardDescription>Your attendance history</CardDescription>
+            <CardDescription>
+              {t("emloyeePortal:attendance.attendanceHistory")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -667,16 +709,18 @@ const EmployeePortal = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Bell className="h-5 w-5" />
-              <span>Notifications</span>
+              <span>{t("emloyeePortal:notifications.title")}</span>
             </CardTitle>
             <CardDescription>
-              Latest updates about payroll and attendance
+              {t("emloyeePortal:notifications.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {notifications.length === 0 ? (
-                <p className="text-sm text-gray-500">No notifications yet.</p>
+                <p className="text-sm text-gray-500">
+                  {t("emloyeePortal:notifications.noNotifications")}
+                </p>
               ) : (
                 notifications.map((note, idx) => (
                   <div
@@ -689,7 +733,11 @@ const EmployeePortal = () => {
                         {new Date(note.created_at).toLocaleString()}
                       </p>
                     </div>
-                    {!note.read && <Badge variant="secondary">New</Badge>}
+                    {!note.read && (
+                      <Badge variant="secondary">
+                        {t("emloyeePortal:notifications.new")}
+                      </Badge>
+                    )}
                   </div>
                 ))
               )}
@@ -702,7 +750,9 @@ const EmployeePortal = () => {
 
         {/* Manual Marking */}
         <div className="bg-white rounded-lg shadow p-4 mt-4">
-          <h3 className="text-lg font-semibold mb-2">Manual Attendance</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            {t("emloyeePortal:attendance.manualAttendance")}
+          </h3>
           <div className="flex gap-2">
             <input
               type="text"
@@ -717,7 +767,7 @@ const EmployeePortal = () => {
                 )?.value.trim();
                 if (!id) {
                   toast({
-                    title: "Please enter a valid User ID",
+                    title: t("emloyeePortal:attendance.enterValidUserId"),
                     variant: "destructive",
                   });
                   return;
@@ -739,7 +789,9 @@ const EmployeePortal = () => {
             <div className="flex items-center justify-between p-3 border-b">
               <div className="flex items-center space-x-2">
                 <Fingerprint className="h-5 w-5 text-purple-600" />
-                <span className="font-medium">Fingerprint Scanner</span>
+                <span className="font-medium">
+                  {t("emloyeePortal:scanner.fingerprintScanner")}
+                </span>
               </div>
               <div>
                 <Button
@@ -749,7 +801,7 @@ const EmployeePortal = () => {
                     setIsProcessingScan(false);
                   }}
                 >
-                  Close
+                  {t("emloyeePortal:scanner.close")}
                 </Button>
               </div>
             </div>
@@ -764,17 +816,22 @@ const EmployeePortal = () => {
             <div className="p-3 border-t flex items-center justify-between">
               <div>
                 <p className="text-sm">
-                  Mode: <strong>{scannerMode}</strong>
+                  {t("emloyeePortal:scanner.mode")}:{" "}
+                  <strong>{scannerMode}</strong>
                 </p>
                 <p className="text-xs text-gray-500">
-                  Place your finger on the scanner
+                  {t("emloyeePortal:scanner.placeFinger")}
                 </p>
               </div>
               <div>
                 {isProcessingScan ? (
-                  <span className="text-sm">Processing...</span>
+                  <span className="text-sm">
+                    {t("emloyeePortal:scanner.processing")}
+                  </span>
                 ) : (
-                  <span className="text-sm">Ready</span>
+                  <span className="text-sm">
+                    {t("emloyeePortal:scanner.ready")}
+                  </span>
                 )}
               </div>
             </div>

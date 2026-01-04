@@ -736,10 +736,10 @@ const ManagerPortal = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Users className="h-5 w-5" />
-                <span>Team Overview</span>
+                <span>{t("managerPortal:dashboard.teamOverviewTitle")}</span>
               </CardTitle>
               <CardDescription>
-                Current status of your team members
+                {t("managerPortal:dashboard.teamOverviewDescription")}
               </CardDescription>
               <div className="mt-2 flex gap-2">
                 <Button
@@ -747,7 +747,8 @@ const ManagerPortal = () => {
                   onClick={openCreateEmployee}
                   className="flex items-center gap-2"
                 >
-                  <PlusCircle className="h-4 w-4" /> Add Employee
+                  <PlusCircle className="h-4 w-4" />{" "}
+                  {t("managerPortal:dashboard.addEmployee")}
                 </Button>
                 <Button
                   size="sm"
@@ -756,7 +757,7 @@ const ManagerPortal = () => {
                   className="flex items-center gap-2"
                 >
                   <Bell className="h-4 w-4" />
-                  Notifications
+                  {t("managerPortal:dashboard.notifications")}
                   {unreadCount > 0 && (
                     <Badge className="ml-2">{unreadCount}</Badge>
                   )}
@@ -767,7 +768,8 @@ const ManagerPortal = () => {
                   onClick={() => setShowSalaryModal(true)}
                   className="flex items-center gap-2"
                 >
-                  <DollarSign className="h-4 w-4" /> Add Salary
+                  <DollarSign className="h-4 w-4" />{" "}
+                  {t("managerPortal:dashboard.addSalary")}
                 </Button>
               </div>
             </CardHeader>
