@@ -3,7 +3,6 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -46,12 +45,18 @@ const EmployeeForm = () => {
     has_agreed_to_terms: false,
   });
 
-  // ✅ Biometric Listener (Same as Signup)
+  // ✅ Biometric Listener
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
 
       if (e.data?.type === "fingerprint-register") {
+        // ✅ limit 10
+        if (capturedCount >= 10) {
+          setBiometricLoading(false);
+          return;
+        }
+
         const newTemplate = e.data.image;
 
         setAllBiometricData((prev) => [...prev, newTemplate]);
@@ -59,22 +64,20 @@ const EmployeeForm = () => {
         setBiometricLoading(false);
 
         toast({
-          title: t("employeeRegistration:biometric.fingerCaptured", {
-            number: capturedCount + 1,
-          }),
+          title: `Finger ${capturedCount + 1} Captured ✅`,
           description:
-            capturedCount < 9
-              ? t("employeeRegistration:biometric.scanNext")
-              : t("employeeRegistration:biometric.allReady"),
+            capturedCount < 9 ? "Scan next finger." : "All fingers ready!",
         });
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [capturedCount]);
+  }, [capturedCount, toast]);
 
   const handleBiometricCapture = () => {
+    if (capturedCount >= 10) return;
+
     setBiometricLoading(true);
     iframeRef.current?.contentWindow?.postMessage(
       { action: "start-scan" },
@@ -82,9 +85,7 @@ const EmployeeForm = () => {
     );
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -125,9 +126,7 @@ const EmployeeForm = () => {
           },
         });
 
-      if (authError) {
-        throw authError;
-      }
+      if (authError) throw authError;
 
       if (authData?.user) {
         const { error: empError } = await supabase.from("employees").insert([
@@ -145,6 +144,11 @@ const EmployeeForm = () => {
             joining_date: formData.joining_date,
             role: "employee",
             biometric_data: allBiometricData,
+
+            // optional (Signup jaisa)
+            raw_template: allBiometricData[0],
+            raw_samples: allBiometricData,
+
             emergency_contact: formData.emergency_contact,
             emergency_phone: formData.emergency_phone,
             has_agreed_to_terms: formData.has_agreed_to_terms,
@@ -152,9 +156,7 @@ const EmployeeForm = () => {
           },
         ]);
 
-        if (empError) {
-          throw empError;
-        }
+        if (empError) throw empError;
 
         toast({
           title: t("employeeRegistration:toast.successTitle"),
@@ -216,6 +218,7 @@ const EmployeeForm = () => {
               onChange={handleInputChange}
             />
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputWithLabel
               name="password"
@@ -255,45 +258,114 @@ const EmployeeForm = () => {
             />
           </div>
 
-          {/* Biometric Section - EXACTLY LIKE SIGNUP */}
-          <div className="p-4 bg-slate-50 rounded-lg border space-y-3">
+          {/* ✅ Biometric Section */}
+          <div className="col-span-2 space-y-6 p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
             <div className="flex justify-between items-center">
-              <Label className="font-bold text-slate-700">
+              <Label className="text-blue-600 font-bold flex items-center gap-2">
+                <Fingerprint className="h-5 w-5" />
                 {t("employeeRegistration:biometric.title")}
               </Label>
-              <span
-                className={`text-sm font-medium ${
-                  capturedCount === 10 ? "text-green-600" : "text-blue-600"
-                }`}
-              >
-                {t("employeeRegistration:biometric.captured", {
-                  count: capturedCount + 1,
-                })}
+              <span className="text-sm font-mono font-bold text-blue-500">
+                {capturedCount}/10 Done
               </span>
             </div>
 
-            <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+            {/* Progress bar + nodes */}
+            <div className="relative flex items-center justify-between px-2 h-20">
+              <div className="absolute top-[28px] left-0 w-full h-[2px] bg-slate-100 z-0" />
               <div
-                className="bg-blue-600 h-full transition-all duration-500"
-                style={{ width: `${(capturedCount / 10) * 100}%` }}
+                className="absolute top-[28px] left-0 h-[2px] bg-green-500 z-0 transition-all duration-700 ease-in-out"
+                style={{
+                  width: `${(Math.max(0, capturedCount - 1) / 9) * 100}%`,
+                }}
               />
+
+              {[...Array(10)].map((_, index) => {
+                const isCaptured = index < capturedCount;
+                const isCurrent = index === capturedCount;
+                const isScanning = isCurrent && biometricLoading;
+
+                return (
+                  <div
+                    key={index}
+                    className="relative z-10 flex flex-col items-center"
+                  >
+                    <div
+                      className={`
+                        w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white
+                        ${
+                          isCaptured
+                            ? "border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                            : isScanning
+                            ? "border-blue-500 animate-bounce shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                            : "border-slate-200 text-slate-300"
+                        }
+                      `}
+                    >
+                      <Fingerprint
+                        className={`h-5 w-5 transition-colors duration-500 ${
+                          isCaptured
+                            ? "text-green-500"
+                            : isScanning
+                            ? "text-blue-500"
+                            : "inherit"
+                        }`}
+                      />
+                      {isScanning && (
+                        <div className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping" />
+                      )}
+                    </div>
+
+                    <span
+                      className={`text-[9px] mt-2 font-black transition-colors ${
+                        isCaptured ? "text-green-600" : "text-slate-400"
+                      }`}
+                    >
+                      F-{index + 1}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
+            {/* Capture Button */}
             <Button
               type="button"
               onClick={handleBiometricCapture}
               disabled={biometricLoading || capturedCount >= 10}
-              variant="outline"
-              className="w-full flex gap-2 border-blue-200 hover:bg-blue-50"
+              className={`w-full h-12 rounded-xl transition-all duration-500 group overflow-hidden relative shadow-md ${
+                capturedCount >= 10
+                  ? "bg-slate-400 cursor-not-allowed opacity-80"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              <Fingerprint className="h-4 w-4" />
-              {biometricLoading
-                ? t("employeeRegistration:biometric.waiting")
-                : capturedCount < 10
-                ? t("employeeRegistration:biometric.scanFinger", {
-                    number: capturedCount + 1,
-                  })
-                : t("employeeRegistration:biometric.ready")}
+              <div className="relative z-10 flex items-center justify-center gap-2">
+                {capturedCount >= 10 ? (
+                  <>
+                    <Fingerprint className="h-5 w-5" />
+                    <span className="font-bold tracking-tight">
+                      {t("employeeRegistration:biometric.ready")}
+                    </span>
+                  </>
+                ) : biometricLoading ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>
+                      {t("employeeRegistration:biometric.waiting")} (F-
+                      {capturedCount + 1})
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Fingerprint className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                    <span className="font-bold tracking-tight">
+                      {t("employeeRegistration:biometric.scanFinger", {
+                        number: capturedCount + 1,
+                      })}
+                    </span>
+                  </>
+                )}
+              </div>
             </Button>
           </div>
 
@@ -333,7 +405,6 @@ const EmployeeForm = () => {
   );
 };
 
-// Helper Components
 const InputWithLabel = ({
   name,
   label,

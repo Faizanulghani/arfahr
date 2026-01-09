@@ -77,6 +77,7 @@ const UsersManagement = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const logout = useLogout();
   const [lang, setLang] = useState(i18n.language || "en");
+  const [authReady, setAuthReady] = useState(false);
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng); // this switches language at runtime
@@ -91,10 +92,40 @@ const UsersManagement = () => {
   // }, [user, navigate]);
 
   useEffect(() => {
-    if (user) {
-      fetchUsers();
-    }
-  }, [user]);
+    let isMounted = true;
+
+    const initAuth = async () => {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (!isMounted) return;
+
+      // not logged in
+      if (error || !data?.user) {
+        navigate("/login");
+        return;
+      }
+
+      setAuthReady(true);
+    };
+
+    initAuth();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) navigate("/login");
+      else setAuthReady(true);
+    });
+
+    return () => {
+      isMounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!authReady) return;
+    fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authReady]);
 
   // ✅ Fetch from backend API
   const fetchUsers = async () => {
@@ -145,7 +176,7 @@ const UsersManagement = () => {
     }
   };
 
-  if (!user) return null;
+  if (loading) return <p>Loading users...</p>;
 
   const roles = ["all", "admin", "hr", "employee", "manager"];
   const statuses = ["all", "active", "inactive"];
