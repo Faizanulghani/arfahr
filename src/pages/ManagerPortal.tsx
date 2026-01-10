@@ -113,26 +113,26 @@ const sum = (obj?: Record<string, number> | null) =>
 
 const computeGrossNet = (s: {
   basic_salary: number;
-  hours_worked?: number | null;
   hourly_rate?: number | null;
   overtime_hours?: number | null;
-  overtime_rate?: number | null;
+  overtime_rate?: number | null; // treat as multiplier (e.g. 1.5)
   allowances?: Record<string, number> | null;
   deductions?: Record<string, number> | null;
 }) => {
   const base = Number(s.basic_salary) || 0;
-  const hw = Number(s.hours_worked || 0);
   const hr = Number(s.hourly_rate || 0);
   const oh = Number(s.overtime_hours || 0);
-  const orate = Number(s.overtime_rate || 0);
-  // overtime: normal hourly pay + overtime component
-  const regularPay = hw * hr;
-  const overtimePay = oh * orate;
+  const mult = Number(s.overtime_rate || 1.5);
+
+  const overtimePay = oh * hr * mult;
+
   const alw = sum(s.allowances || {});
   const ded = sum(s.deductions || {});
-  const gross = base + regularPay + overtimePay + alw;
+
+  const gross = base + alw + overtimePay;
   const net = gross - ded;
-  return { gross, net, overtimePay: regularPay + overtimePay };
+
+  return { gross, net, overtimePay };
 };
 
 const todayStr = () => new Date().toISOString().split("T")[0];
@@ -196,10 +196,9 @@ const ManagerPortal = () => {
   // Live computations
   const { gross, net, overtimePay } = computeGrossNet({
     basic_salary: Number(salaryForm.basic_salary || 0),
-    hours_worked: Number(salaryForm.hours_worked || 0),
     hourly_rate: Number(salaryForm.hourly_rate || 0),
     overtime_hours: Number(salaryForm.overtime_hours || 0),
-    overtime_rate: Number(salaryForm.overtime_rate || 0),
+    overtime_rate: Number(salaryForm.overtime_rate || 1.5),
     allowances: salaryForm.allowances || {},
     deductions: salaryForm.deductions || {},
   });
@@ -552,12 +551,12 @@ const ManagerPortal = () => {
       });
       return;
     }
-    const { gross, net } = computeGrossNet({
+
+    const calc = computeGrossNet({
       basic_salary: Number(salaryForm.basic_salary || 0),
-      hours_worked: Number(salaryForm.hours_worked || 0),
       hourly_rate: Number(salaryForm.hourly_rate || 0),
       overtime_hours: Number(salaryForm.overtime_hours || 0),
-      overtime_rate: Number(salaryForm.overtime_rate || 0),
+      overtime_rate: Number(salaryForm.overtime_rate || 1.5),
       allowances: salaryForm.allowances || {},
       deductions: salaryForm.deductions || {},
     });
@@ -565,46 +564,61 @@ const ManagerPortal = () => {
     const payload = {
       employee_id: salaryForm.employee_id,
       employee_name: salaryForm.employee_name,
+
       basic_salary: Number(salaryForm.basic_salary || 0),
-      hours_worked: Number(salaryForm.hours_worked || 0),
+      hours_worked: Number(salaryForm.hours_worked || 0), // store if your schema has it
       hourly_rate: Number(salaryForm.hourly_rate || 0),
       overtime_hours: Number(salaryForm.overtime_hours || 0),
-      overtime_rate: Number(salaryForm.overtime_rate || 0),
+      overtime_rate: Number(salaryForm.overtime_rate || 1.5), // ✅ multiplier default
+
       allowances: salaryForm.allowances || {},
       deductions: salaryForm.deductions || {},
-      gross_salary: Number(gross.toFixed(2)),
-      net_salary: Number(net.toFixed(2)),
+
+      gross_salary: Number(calc.gross.toFixed(2)),
+      net_salary: Number(calc.net.toFixed(2)),
+
       currency: salaryForm.currency || "USD",
       country: salaryForm.country || "USA",
       effective_date: salaryForm.effective_date || todayStr(),
+
       is_active: true,
       approval_status: "pending",
       payment_status: "pending",
     };
 
     const { error } = await supabase.from("salary_structures").insert(payload);
+
     if (error) {
-      toast({ title: "Failed to save salary", variant: "destructive" });
-    } else {
-      toast({ title: "Salary structure created" });
-      setShowSalaryModal(false);
-      // reset minimal
-      setSalaryForm((s) => ({
-        ...s,
-        employee_id: null,
-        employee_name: "",
-        basic_salary: 0,
-        hours_worked: 0,
-        hourly_rate: 0,
-        overtime_hours: 0,
-        overtime_rate: 0,
-        allowances: { housing: 0, transport: 0 },
-        deductions: { tax: 0, pension: 0 },
-        currency: "USD",
-        effective_date: todayStr(),
-      }));
-      fetchSalaries();
+      toast({
+        title: "Failed to save salary",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
     }
+
+    toast({ title: "Salary structure created" });
+    setShowSalaryModal(false);
+
+    setSalaryForm({
+      employee_id: null,
+      employee_name: "",
+      basic_salary: 0,
+      hours_worked: 0,
+      hourly_rate: 0,
+      overtime_hours: 0,
+      overtime_rate: 1.5,
+      allowances: { housing: 0, transport: 0 },
+      deductions: { tax: 0, pension: 0 },
+      currency: "USD",
+      country: "USA",
+      effective_date: todayStr(),
+      approval_status: "pending",
+      payment_status: "pending",
+      is_active: true,
+    });
+
+    fetchSalaries();
   };
 
   // ============================================================
@@ -809,7 +823,7 @@ const ManagerPortal = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => navigate(`/employees/${emp.id}`)}
+                          onClick={() => navigate(`/employee-view/${emp.id}`)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -908,29 +922,44 @@ const ManagerPortal = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {salaries.slice(0, 8).map((s) => (
-              <div
-                key={s.id}
-                className="border p-3 rounded flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-semibold">{s.employee_name}</p>
-                  <p className="text-xs text-gray-500">
-                    Effective: {s.effective_date}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    Base: {toCurrency(s.basic_salary, s.currency)} • Overtime:{" "}
-                    {toCurrency(overtimePay, s.currency)} • Gross:{" "}
-                    <strong>{toCurrency(s.gross_salary, s.currency)}</strong> •
-                    Net: <strong>{toCurrency(s.net_salary, s.currency)}</strong>
-                  </p>
+            {salaries.slice(0, 8).map((s) => {
+              const rowCalc = computeGrossNet({
+                basic_salary: Number(s.basic_salary || 0),
+                hourly_rate: Number(s.hourly_rate || 0),
+                overtime_hours: Number(s.overtime_hours || 0),
+                overtime_rate: Number(s.overtime_rate || 1.5),
+                allowances: s.allowances || {},
+                deductions: s.deductions || {},
+              });
+
+              return (
+                <div
+                  key={s.id}
+                  className="border p-3 rounded flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-semibold">{s.employee_name}</p>
+                    <p className="text-xs text-gray-500">
+                      Effective: {s.effective_date}
+                    </p>
+
+                    <p className="text-sm text-gray-700">
+                      Base: {toCurrency(s.basic_salary, s.currency)} • Overtime:{" "}
+                      {toCurrency(rowCalc.overtimePay, s.currency)} • Gross:{" "}
+                      <strong>{toCurrency(s.gross_salary, s.currency)}</strong>{" "}
+                      • Net:{" "}
+                      <strong>{toCurrency(s.net_salary, s.currency)}</strong>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{s.approval_status}</Badge>
+                    <Badge>{s.payment_status}</Badge>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{s.approval_status}</Badge>
-                  <Badge>{s.payment_status}</Badge>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+
             {salaries.length === 0 && (
               <div className="text-sm text-gray-500">
                 No salary structures yet.
@@ -1173,7 +1202,7 @@ const ManagerPortal = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {employees.map((e) => (
                     <SelectItem key={e.id} value={e.id}>
                       {e.first_name} {e.last_name} — {e.email}
@@ -1198,12 +1227,22 @@ const ManagerPortal = () => {
             </div>
             <div>
               <label className="text-sm">Currency</label>
-              <Input
+              <Select
                 value={salaryForm.currency || "USD"}
-                onChange={(e) =>
-                  setSalaryForm((f) => ({ ...f, currency: e.target.value }))
+                onValueChange={(v) =>
+                  setSalaryForm((f) => ({ ...f, currency: v }))
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="XOF">XOF</SelectItem>
+                  <SelectItem value="CFA">CFA</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

@@ -54,7 +54,26 @@ const ViewEmployeePage = () => {
               <Field label="Phone" value={employee.phone} />
               <Field label="Position" value={employee.position} />
               <Field label="Department" value={employee.department} />
-              <Field label="Salary" value={employee.salary} />
+              <Field
+                label="Salary"
+                value={
+                  employee.salary ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="font-semibold">
+                        {employee.currency === "USD"
+                          ? "$"
+                          : employee.currency || ""}
+                        {employee.salary}
+                      </span>
+                      <span className="text-xs text-gray-600 bg-white/70 border rounded-full px-2 py-0.5">
+                        / {employee.salary_type || "monthly"}
+                      </span>
+                    </span>
+                  ) : (
+                    "-"
+                  )
+                }
+              />
               <Field label="Joining Date" value={employee.joining_date} />
               <Field label="Employment Type" value={employee.employment_type} />
               <Field

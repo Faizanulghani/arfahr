@@ -184,23 +184,23 @@ const MONTHS = [
 
 const convertCurrency = (amount: number, from: string, to: string) => {
   if (!CURRENCY_RATES[from] || !CURRENCY_RATES[to]) return amount;
-  const usdAmount = amount / CURRENCY_RATES[from]; // Convert to USD
-  return usdAmount * CURRENCY_RATES[to]; // Convert to target
+  const usdAmount = amount * CURRENCY_RATES[from];
+  return usdAmount / CURRENCY_RATES[to];
 };
 
 const getSalaryByFrequency = (
-  gross: number,
+  amount: number,
   frequency: "hourly" | "monthly" | "yearly",
   hoursWorked: number = 160
 ) => {
   switch (frequency) {
     case "hourly":
-      return gross / hoursWorked;
-    case "monthly":
-      return gross / 12;
+      return amount / (hoursWorked || 160);
     case "yearly":
+      return amount * 12;
+    case "monthly":
     default:
-      return gross;
+      return amount;
   }
 };
 
@@ -512,6 +512,7 @@ const SalaryManagement: React.FC = () => {
         dedCopy.social_security = Number((dedCopy.social_security || 0) + ss);
         dedCopy.medicare = Number((dedCopy.medicare || 0) + med);
         const fed = ((defaults.federal_tax_pct || 0) / 100) * gross;
+        dedCopy.federal_tax = Number((dedCopy.federal_tax || 0) + fed);
       } else if (form.country === "BF") {
         const cnss = ((defaults.cnss_pct || 0) / 100) * gross;
         const iuts = ((defaults.iuts_pct || 0) / 100) * gross;
@@ -639,10 +640,10 @@ const SalaryManagement: React.FC = () => {
     try {
       const { data } = await supabase.auth.getUser();
       userId = data?.user?.id ?? null;
-    } catch { }
+    } catch {}
 
     // default buffer (2 business days)
-    const buffer = 2;
+    const buffer = Number(form.buffer_business_days || 0);
 
     const updateData: Record<string, any> = {};
 
@@ -678,8 +679,9 @@ const SalaryManagement: React.FC = () => {
         await supabase.from("notifications").insert([
           {
             employee_id: current.employee_id,
-            message: `Your payroll item for ${current.effective_date
-              } was rejected. Reason: ${notes || "N/A"}`,
+            message: `Your payroll item for ${
+              current.effective_date
+            } was rejected. Reason: ${notes || "N/A"}`,
           },
         ]);
       } else {
@@ -698,12 +700,18 @@ const SalaryManagement: React.FC = () => {
       }
 
       let scheduled_release_iso: string | null = null;
+
+      function ymdToUtcIso(ymd: string) {
+        const [y, m, d] = ymd.split("-").map(Number);
+        return new Date(Date.UTC(y, m - 1, d, 0, 0, 0)).toISOString();
+      }
+
       if (current.payment_notes) {
         const m = current.payment_notes.match(
           /Scheduled release.*?:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/
         );
         if (m) {
-          scheduled_release_iso = new Date(m[1]).toISOString();
+          scheduled_release_iso = ymdToUtcIso(m[1]);
         }
       }
       if (!scheduled_release_iso) {
@@ -828,8 +836,9 @@ const SalaryManagement: React.FC = () => {
 
     toast({
       title: "Status Updated",
-      description: `${type === "approval" ? "Approval" : "Payment"
-        } status updated to ${newStatus}`,
+      description: `${
+        type === "approval" ? "Approval" : "Payment"
+      } status updated to ${newStatus}`,
     });
     await fetchSalaryStructures();
   };
@@ -856,7 +865,8 @@ const SalaryManagement: React.FC = () => {
     }
     if (
       !confirm(
-        `${status === "approved" ? "Approve" : "Reject"} ${pendingIds.length
+        `${status === "approved" ? "Approve" : "Reject"} ${
+          pendingIds.length
         } pending salary structures?`
       )
     )
@@ -933,8 +943,7 @@ const SalaryManagement: React.FC = () => {
       }
     }
   };
-  const decimalPlaces =
-    COUNTRY_DEFAULTS[form.country]?.decimal_places ?? 2;
+  const decimalPlaces = COUNTRY_DEFAULTS[form.country]?.decimal_places ?? 2;
   // --------------------- form edit/update ---------------------
   const handleEdit = (id: string) => {
     const structure = salaryStructures.find((s) => s.id === id);
@@ -999,7 +1008,9 @@ const SalaryManagement: React.FC = () => {
     }
 
     // Deductions calculation
-    const dedCopy: Record<string, number> = { ...(form.deductions as Record<string, number>) };
+    const dedCopy: Record<string, number> = {
+      ...(form.deductions as Record<string, number>),
+    };
     if (form.country === "USA") {
       const ss = ((defaults.fico_ss_pct || 0) / 100) * gross;
       const med = ((defaults.fico_med_pct || 0) / 100) * gross;
@@ -1018,8 +1029,16 @@ const SalaryManagement: React.FC = () => {
       const cnss = ((defaults.cnss_pct || 0) / 100) * gross;
       const iuts = ((defaults.iuts_pct || 0) / 100) * gross;
 
-      dedCopy.cnss = smartRound(Number((dedCopy.cnss || 0) + cnss), decimal, rounding);
-      dedCopy.iuts = smartRound(Number((dedCopy.iuts || 0) + iuts), decimal, rounding);
+      dedCopy.cnss = smartRound(
+        Number((dedCopy.cnss || 0) + cnss),
+        decimal,
+        rounding
+      );
+      dedCopy.iuts = smartRound(
+        Number((dedCopy.iuts || 0) + iuts),
+        decimal,
+        rounding
+      );
     }
 
     // Net salary calculation
@@ -1031,11 +1050,18 @@ const SalaryManagement: React.FC = () => {
 
     // Update database
     setLoading(true);
+    const empId = selectedEmployeeIds[0];
+    const emp = employees.find((e) => e.id === empId);
+    const employee_name = emp
+      ? `${emp.first_name} ${emp.last_name}`
+      : undefined;
     const before = salaryStructures.find((s) => s.id === editId);
     try {
       const { data, error } = await supabase
         .from("salary_structures")
         .update({
+          employee_id: empId,
+          employee_name: employee_name,
           basic_salary: form.basic_salary,
           hours_worked: form.hours_worked,
           hourly_rate: form.hourly_rate,
@@ -1072,7 +1098,6 @@ const SalaryManagement: React.FC = () => {
       setIsModalOpen(false);
       setEditId(null);
       await fetchSalaryStructures();
-
     } catch (err: any) {
       console.error("update error", err);
       toast({
@@ -1236,9 +1261,9 @@ const SalaryManagement: React.FC = () => {
     const avgGross =
       total > 0
         ? salaryStructures.reduce(
-          (sum, s) => sum + Number(s.gross_salary || 0),
-          0
-        ) / total
+            (sum, s) => sum + Number(s.gross_salary || 0),
+            0
+          ) / total
         : 0;
 
     return {
@@ -1407,7 +1432,7 @@ const SalaryManagement: React.FC = () => {
                     {stats.approved}
                   </p>
                 </div>
-                <CheckCircle className="h-8 w-8 text_green-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -1600,9 +1625,9 @@ const SalaryManagement: React.FC = () => {
                         <TableCell>
                           {s.effective_date
                             ? formatDate(
-                              parseISO(s.effective_date),
-                              "MMM dd, yyyy"
-                            )
+                                parseISO(s.effective_date),
+                                "MMM dd, yyyy"
+                              )
                             : "-"}
                         </TableCell>
 
@@ -1620,16 +1645,20 @@ const SalaryManagement: React.FC = () => {
 
                             <AlertDialog
                               open={viewModal.open}
-                              onOpenChange={() =>
-                                setViewModal({ open: false, salary: null })
+                              onOpenChange={(open) =>
+                                setViewModal({
+                                  open,
+                                  salary: open ? viewModal.salary : null,
+                                })
                               }
                             >
-
                               <AlertDialogContent className="max-w-2xl">
-                                <button onClick={() => setViewModal({ open: false, salary: null })} className="absolute top-4 right-4 text-3xl">X</button>
-                                <h2 className="text-xl font-semibold mb-4">
-                                  Salary Details
-                                </h2>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Salary Details
+                                  </AlertDialogTitle>
+                                </AlertDialogHeader>
+
                                 {viewModal.salary && (
                                   <div className="space-y-2 text-sm">
                                     <p>
@@ -1640,18 +1669,44 @@ const SalaryManagement: React.FC = () => {
                                       <strong>Country:</strong>{" "}
                                       {viewModal.salary.country}
                                     </p>
+
                                     <p>
                                       <strong>Basic Salary:</strong>{" "}
-                                      {viewModal.salary.basic_salary}
+                                      {new Intl.NumberFormat("en-US", {
+                                        style: "currency",
+                                        currency:
+                                          viewModal.salary.currency || "USD",
+                                      }).format(
+                                        Number(
+                                          viewModal.salary.basic_salary || 0
+                                        )
+                                      )}
                                     </p>
+
                                     <p>
                                       <strong>Gross Salary:</strong>{" "}
-                                      {viewModal.salary.gross_salary}
+                                      {new Intl.NumberFormat("en-US", {
+                                        style: "currency",
+                                        currency:
+                                          viewModal.salary.currency || "USD",
+                                      }).format(
+                                        Number(
+                                          viewModal.salary.gross_salary || 0
+                                        )
+                                      )}
                                     </p>
+
                                     <p>
                                       <strong>Net Salary:</strong>{" "}
-                                      {viewModal.salary.net_salary}
+                                      {new Intl.NumberFormat("en-US", {
+                                        style: "currency",
+                                        currency:
+                                          viewModal.salary.currency || "USD",
+                                      }).format(
+                                        Number(viewModal.salary.net_salary || 0)
+                                      )}
                                     </p>
+
                                     <p>
                                       <strong>Approval Status:</strong>{" "}
                                       {viewModal.salary.approval_status}
@@ -1666,6 +1721,19 @@ const SalaryManagement: React.FC = () => {
                                     </p>
                                   </div>
                                 )}
+
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel
+                                    onClick={() =>
+                                      setViewModal({
+                                        open: false,
+                                        salary: null,
+                                      })
+                                    }
+                                  >
+                                    Close
+                                  </AlertDialogCancel>
+                                </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
 
@@ -1712,7 +1780,6 @@ const SalaryManagement: React.FC = () => {
 
       {/* Add/Edit Salary Modal */}
       <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-
         <AlertDialogContent className="max-w-4xl">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">
@@ -1786,12 +1853,22 @@ const SalaryManagement: React.FC = () => {
 
                 <div>
                   <Label>Currency</Label>
-                  <Input
+                  <Select
                     value={form.currency}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, currency: e.target.value }))
+                    onValueChange={(val) =>
+                      setForm((prev) => ({ ...prev, currency: val }))
                     }
-                  />
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="CFA">CFA</SelectItem>
+                      <SelectItem value="XOF">XOF</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
@@ -1916,9 +1993,15 @@ const SalaryManagement: React.FC = () => {
                 </div>
               </div>
               <div className="mt-4 p-4 border rounded bg-gray-50">
-                <h4 className="font-semibold mb-2">Salary Preview in Other Currencies</h4>
+                <h4 className="font-semibold mb-2">
+                  Salary Preview in Other Currencies
+                </h4>
                 {["USD", "CFA", "EUR"].map((cur) => {
-                  const grossInCur = convertCurrency(liveGross, form.currency, cur);
+                  const grossInCur = convertCurrency(
+                    liveGross,
+                    form.currency,
+                    cur
+                  );
                   const decimals = cur === "CFA" ? 0 : 2;
 
                   const formatNumber = (num: number) =>
@@ -1930,10 +2013,20 @@ const SalaryManagement: React.FC = () => {
                     }).format(num);
                   return (
                     <div key={cur} className="text-sm mb-1">
-                      <strong>{cur}:</strong>{" "}
-                      Hourly: {formatNumber(getSalaryByFrequency(grossInCur, "hourly", form.hours_worked))},{" "}
-                      Monthly: {formatNumber(getSalaryByFrequency(grossInCur, "monthly"))},{" "}
-                      Yearly: {formatNumber(getSalaryByFrequency(grossInCur, "yearly"))}
+                      <strong>{cur}:</strong> Hourly:{" "}
+                      {formatNumber(
+                        getSalaryByFrequency(
+                          grossInCur,
+                          "hourly",
+                          form.hours_worked
+                        )
+                      )}
+                      , Monthly:{" "}
+                      {formatNumber(
+                        getSalaryByFrequency(grossInCur, "monthly")
+                      )}
+                      , Yearly:{" "}
+                      {formatNumber(getSalaryByFrequency(grossInCur, "yearly"))}
                     </div>
                   );
                 })}
@@ -2020,8 +2113,8 @@ const SalaryManagement: React.FC = () => {
                       ? "Updating..."
                       : "Saving..."
                     : editId
-                      ? "Update Salary"
-                      : "Save Salary"}
+                    ? "Update Salary"
+                    : "Save Salary"}
                 </AlertDialogAction>
               </div>
             </div>
@@ -2054,7 +2147,7 @@ const SalaryManagement: React.FC = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {statusModal.type === "approval" ? (
                     <>
                       <SelectItem value="approved">Approved</SelectItem>

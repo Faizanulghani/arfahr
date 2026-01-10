@@ -50,6 +50,8 @@ interface UserProfile {
   position: string;
   employee_id: string;
   salary: string | number;
+  salary_type?: "hourly" | "monthly";
+  currency?: "USD" | "CFA";
   emergency_contact: string;
   emergency_phone: string;
 }
@@ -80,16 +82,10 @@ const UsersManagement = () => {
   const [authReady, setAuthReady] = useState(false);
 
   const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng); // this switches language at runtime
+    i18n.changeLanguage(lng);
     setLang(lng);
     localStorage.setItem("lang", lng);
   };
-  // Authentication guard
-  // useEffect(() => {
-  //   if (!user) {
-  //     navigate("/login");
-  //   }
-  // }, [user, navigate]);
 
   useEffect(() => {
     let isMounted = true;
@@ -164,6 +160,8 @@ const UsersManagement = () => {
             department: meta.department || "",
             position: meta.position || "",
             salary: meta.salary || "0",
+            salary_type: meta.salary_type || "monthly",
+            currency: meta.currency || "USD",
             emergency_contact: meta.emergency_contact || "",
             emergency_phone: meta.emergency_phone || "",
             employee_id: meta.employee_id || `EMP-${u.id.slice(0, 4)}`,
@@ -734,8 +732,20 @@ const UsersManagement = () => {
                   {selectedUser.profile.position || "—"}
                 </p>
                 <p>
-                  <strong>{t("usersManagement:usersManagement.salary")}</strong>
-                  {selectedUser.profile.salary || "—"}
+                  <strong>{t("usersManagement:usersManagement.salary")}</strong>{" "}
+                  {selectedUser.profile.salary ? (
+                    <>
+                      {selectedUser.profile.currency === "USD"
+                        ? "$"
+                        : selectedUser.profile.currency || ""}
+                      {selectedUser.profile.salary}{" "}
+                      <span className="text-gray-500">
+                        / {selectedUser.profile.salary_type || "monthly"}
+                      </span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </p>
                 <p>
                   <strong>{t("usersManagement:usersManagement.phone")}</strong>
