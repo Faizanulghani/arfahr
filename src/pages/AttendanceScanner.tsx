@@ -43,7 +43,11 @@ const AttendanceScanner = () => {
       setStatus("🔍 Matching fingerprint...");
 
       if (matchStatus === "no_match" || !employee) {
-        toast({ title: "Not Recognized", description: "Fingerprint not matched", variant: "destructive" });
+        toast({
+          title: "Not Recognized",
+          description: "Fingerprint not matched",
+          variant: "destructive",
+        });
         setStatus("❌ Fingerprint not recognized");
         return;
       }
@@ -65,7 +69,7 @@ const AttendanceScanner = () => {
           toast({
             title: "Already Checked In",
             description: "Employee must check out before checking in again.",
-            variant: "destructive"
+            variant: "destructive",
           });
           setStatus("⚠️ Already checked in");
           return;
@@ -73,11 +77,13 @@ const AttendanceScanner = () => {
 
         const { data, error } = await supabase
           .from("attendances")
-          .insert([{
-            employee_id: matchedEmployee.id,
-            check_in: now.toISOString(),
-            status: "checked_in",
-          }])
+          .insert([
+            {
+              employee_id: matchedEmployee.id,
+              check_in: now.toISOString(),
+              status: "checked_in",
+            },
+          ])
           .select()
           .single();
 
@@ -88,12 +94,15 @@ const AttendanceScanner = () => {
           setAttendance({
             status: "checked_in",
             employee_name: displayName,
-            check_in: data.check_in
+            check_in: data.check_in,
           });
 
           toast({
             title: "Checked In",
-            description: `${displayName} at ${dayjs.utc(data.check_in).local().format("hh:mm A")}`
+            description: `${displayName} at ${dayjs
+              .utc(data.check_in)
+              .local()
+              .format("hh:mm A")}`,
           });
 
           setStatus("✅ Checked in");
@@ -123,7 +132,7 @@ const AttendanceScanner = () => {
           toast({
             title: "Check-Out Failed",
             description: "No active check-in found",
-            variant: "destructive"
+            variant: "destructive",
           });
           setStatus("⚠️ No check-in session");
           return;
@@ -131,7 +140,9 @@ const AttendanceScanner = () => {
 
         const checkInTime = dayjs.utc(lastAttendance.check_in);
         const checkOutTime = dayjs();
-        const totalHours = Number(checkOutTime.diff(checkInTime, "minute") / 60).toFixed(2);
+        const totalHours = Number(
+          checkOutTime.diff(checkInTime, "minute") / 60
+        ).toFixed(2);
 
         const { error } = await supabase
           .from("attendances")
@@ -186,26 +197,37 @@ const AttendanceScanner = () => {
     setEmployees(data || []);
     setMode(type);
     setScannerVisible(true);
-    setStatus(`👉 Please place your thumb to ${type === "check-in" ? "Check-In" : "Check-Out"}`);
+    setStatus(
+      `👉 Please place your thumb to ${
+        type === "check-in" ? "Check-In" : "Check-Out"
+      }`
+    );
 
     // ✅ Send to iframe
     setTimeout(() => {
       const iframe = document.querySelector("iframe");
-      iframe?.contentWindow?.postMessage({
-        type: "employees",
-        data: data || []
-      }, "*");
+      iframe?.contentWindow?.postMessage(
+        {
+          type: "employees",
+          data: data || [],
+        },
+        "*"
+      );
     }, 500);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-purple-50 py-12 px-6">
       <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-8 space-y-6 border border-gray-200">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">🕘 Attendance</h2>
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
+          🕘 Attendance
+        </h2>
 
         <div className="flex justify-center space-x-6">
           <Button onClick={() => startScanner("check-in")}>📥 Check In</Button>
-          <Button variant="outline" onClick={() => startScanner("check-out")}>📤 Check Out</Button>
+          <Button variant="outline" onClick={() => startScanner("check-out")}>
+            📤 Check Out
+          </Button>
         </div>
 
         <div className="text-center text-sm text-gray-600">
@@ -227,13 +249,19 @@ const AttendanceScanner = () => {
             </div>
             <div className="text-sm text-gray-700">
               <strong>🕓 Check-In:</strong>{" "}
-              {dayjs.utc(attendance.check_in).local().format("dddd, MMM D, YYYY | hh:mm A")}
+              {dayjs
+                .utc(attendance.check_in)
+                .local()
+                .format("dddd, MMM D, YYYY | hh:mm A")}
             </div>
             {attendance.check_out && (
               <>
                 <div className="text-sm text-gray-700">
                   <strong>🏁 Check-Out:</strong>{" "}
-                  {dayjs.utc(attendance.check_out).local().format("dddd, MMM D, YYYY | hh:mm A")}
+                  {dayjs
+                    .utc(attendance.check_out)
+                    .local()
+                    .format("dddd, MMM D, YYYY | hh:mm A")}
                 </div>
                 <div className="text-sm text-gray-700">
                   <strong>⏱ Total Hours:</strong> {attendance.total_hours} hrs

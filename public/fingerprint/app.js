@@ -2,88 +2,105 @@
 
 const params = new URLSearchParams(globalThis.location.search);
 const mode = params.get("mode") || "attendance";
+const API_URL = "http://localhost:5055"; // ✅ your .NET backend
+
 let sdk = new Fingerprint.WebApi();
+let employees = []; // ✅ ALL employees here (with biometric_data)
 
-let savedTemplates = [];
-let currentUserData = null;
+function updateStatus(text) {
+  const el = document.getElementById("status");
+  if (el) el.textContent = text;
+  console.log("[FP]", text);
+}
 
+// Receive employees list from parent
 window.addEventListener("message", (event) => {
-  if (event.data.type === "employees") {
-    currentUserData = event.data.data[0];
-    savedTemplates = currentUserData.biometric_data || [];
-    console.log("✅ Templates loaded for matching:", savedTemplates.length);
+  if (event.data?.type === "employees") {
+    employees = Array.isArray(event.data.data) ? event.data.data : [];
+    console.log("✅ Employees loaded:", employees.length);
+    updateStatus(`✅ Employees loaded: ${employees.length}. Place finger...`);
   }
 });
 
+// Device events
 sdk.onDeviceConnected = () =>
   updateStatus("🟢 Scanner connected. Place finger.");
 sdk.onDeviceDisconnected = () => updateStatus("🔌 Scanner disconnected.");
 sdk.onCommunicationFailed = () => updateStatus("❌ Communication failed.");
 
-// 2. Finger Scan hone par kya karna hai
+// Core: on scan
 sdk.onSamplesAcquired = async (s) => {
   try {
     const samples = JSON.parse(s.samples);
     const pngBase64 =
       "data:image/png;base64," + Fingerprint.b64UrlTo64(samples[0]);
+
     updateStatus("📸 Captured! Processing...");
 
+    // ✅ REGISTER MODE (same as before)
     if (mode === "register") {
       window.parent.postMessage(
         { type: "fingerprint-register", image: pngBase64 },
         "*"
       );
+      updateStatus("✅ Captured! Place NEXT finger...");
+      return;
+    }
 
-      updateStatus("📸 Captured! Place NEXT finger...");
-    } else if (mode === "attendance") {
-      if (savedTemplates.length === 0) {
-        updateStatus("⚠️ No templates loaded. Try again.");
-        return;
-      }
+    // ✅ ATTENDANCE MODE (match against ALL employees)
+    if (employees.length === 0) {
+      updateStatus("⚠️ No employees/templates loaded from app.");
+      window.parent.postMessage(
+        {
+          type: "fingerprint-attendance",
+          status: "no_match",
+          image: pngBase64,
+        },
+        "*"
+      );
+      return;
+    }
 
-      let matched = false;
-      const THRESHOLD = 0.4;
+    // Find match
+    const matchResult = await findMatchingEmployee(pngBase64, employees);
 
-      // --- LOOP START: 10 FINGERS CHECK ---
-      for (let i = 0; i < savedTemplates.length; i++) {
-        const savedTemplate = savedTemplates[i];
-        if (!savedTemplate) continue;
+    if (matchResult) {
+      const { employee, score } = matchResult;
 
-        // Image similarity check
-        const score = await compareFingerprints(pngBase64, savedTemplate);
-        console.log(`🔍 Checking Finger ${i + 1}: Score ${score.toFixed(4)}`);
+      console.log(
+        "✅ MATCH:",
+        employee.first_name,
+        employee.last_name,
+        "score:",
+        score
+      );
 
-        if (score >= THRESHOLD) {
-          matched = true;
-          break; 
-        }
-      }
-      // --- LOOP END ---
+      window.parent.postMessage(
+        {
+          type: "fingerprint-attendance",
+          status: "match",
+          employee,
+          image: pngBase64,
+          score,
+        },
+        "*"
+      );
 
-      if (matched) {
-        console.log("✅ Match Found for user:", currentUserData.first_name);
-        window.parent.postMessage(
-          {
-            type: "fingerprint-attendance",
-            status: "match",
-            employee: currentUserData,
-            image: pngBase64,
-          },
-          "*"
-        );
-        sdk.stopAcquisition();
-      } else {
-        console.log("❌ No Match found in any of the 10 fingers.");
-        updateStatus("❌ No match. Try another finger.");
-        window.parent.postMessage(
-          {
-            type: "fingerprint-attendance",
-            status: "no_match",
-            image: pngBase64,
-          },
-          "*"
-        );
-      }
+      updateStatus(`✅ Match: ${employee.first_name} ${employee.last_name}`);
+      // Optional: stop after match
+      // await sdk.stopAcquisition();
+    } else {
+      console.log("❌ No match found in any employee fingers.");
+      updateStatus("❌ No match. Try another finger.");
+
+      window.parent.postMessage(
+        {
+          type: "fingerprint-attendance",
+          status: "no_match",
+          image: pngBase64,
+        },
+        "*"
+      );
     }
   } catch (err) {
     console.error("Processing Error:", err);
@@ -91,52 +108,54 @@ sdk.onSamplesAcquired = async (s) => {
   }
 };
 
+// Start scanner
 sdk
   .startAcquisition(Fingerprint.SampleFormat.PngImage)
   .then(() => updateStatus("🔄 Scanner ready..."))
   .catch((err) => updateStatus("❌ Failed to start: " + err));
 
-function updateStatus(text) {
-  const el = document.getElementById("status");
-  if (el) el.textContent = text;
-}
+/* ---------------- Matching helpers ---------------- */
 
-// Comparison Helpers
-async function compareFingerprints(base64A, base64B) {
-  try {
-    const img1 = await getImageData(base64A);
-    const img2 = await getImageData(base64B);
-    return runSSIM(img1, img2);
-  } catch (e) {
-    return 0;
+async function findMatchingEmployee(probePng, employeesList) {
+  // sequential search with early-exit (simple + stable)
+  for (let e = 0; e < employeesList.length; e++) {
+    const emp = employeesList[e];
+    const templates = Array.isArray(emp.biometric_data)
+      ? emp.biometric_data
+      : [];
+    if (templates.length === 0) continue;
+
+    for (let i = 0; i < templates.length; i++) {
+      const candidatePng = templates[i];
+      if (!candidatePng) continue;
+
+      const result = await verifyWithBackend(probePng, candidatePng);
+      // result: { match, score, threshold }
+
+      console.log(
+        `🔍 ${emp.first_name} ${emp.last_name} (F${i + 1}) score=${
+          result.score
+        } match=${result.match}`
+      );
+
+      if (result.match) {
+        return { employee: emp, score: result.score };
+      }
+    }
   }
+  return null;
 }
 
-function getImageData(base64) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
-      resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
-    };
-    img.src = base64;
+async function verifyWithBackend(probePng, candidatePng) {
+  const res = await fetch(API_URL + "/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ probePng, candidatePng }),
   });
-}
 
-function runSSIM(img1, img2) {
-  const data1 = img1.data;
-  const data2 = img2.data;
-  let matches = 0;
-  let total = 0;
-  for (let i = 0; i < data1.length; i += 4) {
-    const avg1 = (data1[i] + data1[i + 1] + data1[i + 2]) / 3;
-    const avg2 = (data2[i] + data2[i + 1] + data2[i + 2]) / 3;
-    if (Math.abs(avg1 - avg2) < 30) matches++;
-    total++;
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.error || "Verify failed");
   }
-  return matches / total;
+  return data;
 }

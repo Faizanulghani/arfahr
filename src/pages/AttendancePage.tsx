@@ -14,7 +14,7 @@ import {
   CheckCircle,
   XCircle,
   Search,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 
 import "dayjs/locale/en";
@@ -80,7 +80,11 @@ const AttendanceScanner = () => {
       const { status: matchStatus, employee } = e.data;
 
       if (matchStatus !== "match" || !employee) {
-        toast({ title: "Not Recognized", description: "Fingerprint not matched", variant: "destructive" });
+        toast({
+          title: "Not Recognized",
+          description: "Fingerprint not matched",
+          variant: "destructive",
+        });
         setStatus("❌ Fingerprint not recognized");
         return;
       }
@@ -105,10 +109,13 @@ const AttendanceScanner = () => {
         await supabase.from("attendances").insert({
           employee_id: employee.id,
           check_in: now.toISOString(),
-          status: "checked_in"
+          status: "checked_in",
         });
 
-        toast({ title: "Checked In", description: `${displayName} checked in.` });
+        toast({
+          title: "Checked In",
+          description: `${displayName} checked in.`,
+        });
         setStatus("✅ Checked in");
         setScannerVisible(false);
         loadTodayAttendance();
@@ -132,15 +139,23 @@ const AttendanceScanner = () => {
         }
 
         const checkOutTime = dayjs();
-        const total = Number(checkOutTime.diff(dayjs.utc(last.check_in), "minute") / 60).toFixed(2);
+        const total = Number(
+          checkOutTime.diff(dayjs.utc(last.check_in), "minute") / 60
+        ).toFixed(2);
 
-        await supabase.from("attendances").update({
-          check_out: checkOutTime.toISOString(),
-          total_hours: total,
-          status: "checked_out"
-        }).eq("id", last.id);
+        await supabase
+          .from("attendances")
+          .update({
+            check_out: checkOutTime.toISOString(),
+            total_hours: total,
+            status: "checked_out",
+          })
+          .eq("id", last.id);
 
-        toast({ title: "Checked Out", description: `${displayName} — ${total} hrs` });
+        toast({
+          title: "Checked Out",
+          description: `${displayName} — ${total} hrs`,
+        });
         setStatus("✅ Checked out");
         setScannerVisible(false);
         loadTodayAttendance();
@@ -154,17 +169,24 @@ const AttendanceScanner = () => {
 
   const handleManualEntry = async () => {
     if (!employeeId.trim()) {
-      toast({ title: "Missing", description: "Please enter Employee ID", variant: "destructive" });
+      toast({
+        title: "Missing",
+        description: "Please enter Employee ID",
+        variant: "destructive",
+      });
       return;
     }
 
     await supabase.from("attendances").insert({
       employee_id: employeeId,
       check_in: new Date().toISOString(),
-      status: "manual_checkin"
+      status: "manual_checkin",
     });
 
-    toast({ title: "Manual Entry", description: `Attendance for ${employeeId} saved.` });
+    toast({
+      title: "Manual Entry",
+      description: `Attendance for ${employeeId} saved.`,
+    });
     setEmployeeId("");
     loadTodayAttendance();
     loadMissedAlerts();
@@ -175,6 +197,10 @@ const AttendanceScanner = () => {
       .from("employees")
       .select("id, first_name, last_name, biometric_data")
       .not("biometric_data", "is", null);
+
+    const clean = (data || []).filter(
+      (e) => Array.isArray(e.biometric_data) && e.biometric_data.length > 0
+    );
 
     setMode(type);
     setScannerVisible(true);
@@ -188,13 +214,17 @@ const AttendanceScanner = () => {
 
   const today = currentTime.toLocaleDateString();
 
-  const filteredRecords = attendanceRecords.filter(r => {
-    const name = `${r.employees?.first_name || ""} ${r.employees?.last_name || ""}`.toLowerCase();
+  const filteredRecords = attendanceRecords.filter((r) => {
+    const name = `${r.employees?.first_name || ""} ${
+      r.employees?.last_name || ""
+    }`.toLowerCase();
     return (
       searchQuery === "" ||
       name.includes(searchQuery.toLowerCase()) ||
       r.employee_id.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    iframe?.contentWindow?.postMessage({ type: "employees", data: clean }, "*");
   });
 
   return (
@@ -215,18 +245,30 @@ const AttendanceScanner = () => {
 
         <div className="flex gap-4 flex-wrap">
           <Button onClick={() => startScanner("check-in")}>📥 Check In</Button>
-          <Button variant="outline" onClick={() => startScanner("check-out")}>📤 Check Out</Button>
-          <Button variant="destructive" onClick={() => { setShowAlerts(!showAlerts); loadMissedAlerts(); }}>
+          <Button variant="outline" onClick={() => startScanner("check-out")}>
+            📤 Check Out
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              setShowAlerts(!showAlerts);
+              loadMissedAlerts();
+            }}
+          >
             <AlertTriangle className="w-4 h-4 mr-1" /> Alerts
           </Button>
         </div>
 
         {showAlerts && missedAlerts.length > 0 && (
           <div className="bg-yellow-100 border border-yellow-300 p-4 rounded">
-            <h4 className="font-semibold mb-2 text-yellow-800">⚠️ Missed Check-ins</h4>
+            <h4 className="font-semibold mb-2 text-yellow-800">
+              ⚠️ Missed Check-ins
+            </h4>
             <ul className="list-disc list-inside text-sm text-yellow-900">
               {missedAlerts.map((emp) => (
-                <li key={emp.id}>{emp.first_name} {emp.last_name}</li>
+                <li key={emp.id}>
+                  {emp.first_name} {emp.last_name}
+                </li>
               ))}
             </ul>
           </div>
@@ -254,61 +296,63 @@ const AttendanceScanner = () => {
           </div>
         </div>
 
+        {/* Alerts Section */}
+        <div className="bg-white rounded-xl shadow p-6 space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            ⚠️ Attendance Alerts
+          </h3>
+          <div className="space-y-2">
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                const todayStart = dayjs().startOf("day").toISOString();
+                const todayEnd = dayjs().endOf("day").toISOString();
 
-{/* Alerts Section */}
-<div className="bg-white rounded-xl shadow p-6 space-y-4">
-  <h3 className="text-lg font-semibold flex items-center gap-2">
-    ⚠️ Attendance Alerts
-  </h3>
-  <div className="space-y-2">
-    <Button
-      variant="destructive"
-      onClick={async () => {
-        const todayStart = dayjs().startOf("day").toISOString();
-        const todayEnd = dayjs().endOf("day").toISOString();
+                const { data: allEmployees } = await supabase
+                  .from("employees")
+                  .select("id, first_name, last_name");
 
-        const { data: allEmployees } = await supabase
-          .from("employees")
-          .select("id, first_name, last_name");
+                const { data: checkIns } = await supabase
+                  .from("attendances")
+                  .select("employee_id, check_out")
+                  .gte("check_in", todayStart)
+                  .lte("check_in", todayEnd);
 
-        const { data: checkIns } = await supabase
-          .from("attendances")
-          .select("employee_id, check_out")
-          .gte("check_in", todayStart)
-          .lte("check_in", todayEnd);
+                const checkedInIds = checkIns.map((r) => r.employee_id);
+                const notCheckedIn = allEmployees?.filter(
+                  (e) => !checkedInIds.includes(e.id)
+                );
 
-        const checkedInIds = checkIns.map((r) => r.employee_id);
-        const notCheckedIn = allEmployees?.filter(
-          (e) => !checkedInIds.includes(e.id)
-        );
+                const notCheckedOut = checkIns
+                  .filter((r) => !r.check_out)
+                  .map((r) => r.employee_id);
 
-        const notCheckedOut = checkIns
-          .filter((r) => !r.check_out)
-          .map((r) => r.employee_id);
+                const notCheckedOutEmployees = allEmployees?.filter((e) =>
+                  notCheckedOut.includes(e.id)
+                );
 
-        const notCheckedOutEmployees = allEmployees?.filter((e) =>
-          notCheckedOut.includes(e.id)
-        );
-
-        const alertText = `
+                const alertText = `
 🟥 Missed Check-Ins:
-${notCheckedIn?.map((e) => `• ${e.first_name} ${e.last_name}`).join("\n") || "None"}
+${
+  notCheckedIn?.map((e) => `• ${e.first_name} ${e.last_name}`).join("\n") ||
+  "None"
+}
 
 🟦 Missed Check-Outs:
-${notCheckedOutEmployees
-  ?.map((e) => `• ${e.first_name} ${e.last_name}`)
-  .join("\n") || "None"}
+${
+  notCheckedOutEmployees
+    ?.map((e) => `• ${e.first_name} ${e.last_name}`)
+    .join("\n") || "None"
+}
         `;
 
-        alert(alertText.trim());
-      }}
-    >
-      Show Alerts
-    </Button>
-  </div>
-</div>
-
-
+                alert(alertText.trim());
+              }}
+            >
+              Show Alerts
+            </Button>
+          </div>
+        </div>
 
         <div className="bg-white rounded-xl shadow p-6 space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">

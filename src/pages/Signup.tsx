@@ -63,7 +63,7 @@ const Signup = () => {
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
+      // if (event.origin !== window.location.origin) return;
 
       if (event.data?.type === "fingerprint-register") {
         if (capturedCount >= 10) {

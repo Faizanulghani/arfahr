@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "qDUZe/vuzds=",
+  "success": true,
+  "projectFilePath": "D:\\D data\\Data\\HR Projects\\arfa-last\\public\\fingerprint\\FingerMatchApi\\FingerMatchApi.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Faizan Ul Ghani\\.nuget\\packages\\dahomey.cbor\\1.16.1\\dahomey.cbor.1.16.1.nupkg.sha512",
+    "C:\\Users\\Faizan Ul Ghani\\.nuget\\packages\\sixlabors.imagesharp\\3.1.12\\sixlabors.imagesharp.3.1.12.nupkg.sha512",
+    "C:\\Users\\Faizan Ul Ghani\\.nuget\\packages\\sourceafis\\3.14.0\\sourceafis.3.14.0.nupkg.sha512",
+    "C:\\Users\\Faizan Ul Ghani\\.nuget\\packages\\system.io.pipelines\\6.0.1\\system.io.pipelines.6.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
