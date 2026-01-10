@@ -16,6 +16,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Fingerprint } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useTranslation } from "react-i18next";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -35,6 +42,8 @@ const Signup = () => {
     position: "",
     department: "",
     salary: "",
+    salary_type: "monthly",
+    currency: "USD",
     joining_date: "",
     employment_type: "full_time",
     emergency_contact: "",
@@ -138,6 +147,8 @@ const Signup = () => {
           position: formData.position,
           department: formData.department,
           salary: formData.salary,
+          salary_type: formData.salary_type,
+          currency: formData.currency,
           employment_type: formData.employment_type,
           emergency_contact: formData.emergency_contact,
           emergency_phone: formData.emergency_phone,
@@ -163,7 +174,9 @@ const Signup = () => {
       phone: formData.phone,
       position: formData.position,
       department: formData.department,
-      salary: formData.salary ? parseFloat(formData.salary) : null,
+      salary: parseFloat(formData.salary),
+      salary_type: formData.salary_type,
+      currency: formData.currency,
       employment_type: formData.employment_type,
       address: formData.address || null,
       joining_date: formData.joining_date,
@@ -300,15 +313,94 @@ const Signup = () => {
               />
             </div>
 
-            {/* Salary */}
-            <div className="space-y-2 col-span-1">
-              <Label>{t("register:labels.salary")}</Label>
-              <Input
-                type="number"
-                name="salary"
-                value={formData.salary}
-                onChange={handleChange}
-              />
+            {/* Salary Setup */}
+            <div className="col-span-2 rounded-xl border bg-white p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <Label className="text-base font-semibold">
+                    Salary Setup
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Choose type, currency and amount
+                  </p>
+                </div>
+
+                {/* Small preview chip */}
+                <div className="text-xs font-semibold px-3 py-1 rounded-full border bg-slate-50">
+                  {formData.currency} • {formData.salary_type?.toUpperCase()}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Salary Type */}
+                <div className="space-y-2">
+                  <Label>Salary Type</Label>
+                  <Select
+                    value={formData.salary_type}
+                    onValueChange={(val) =>
+                      setFormData((prev) => ({ ...prev, salary_type: val }))
+                    }
+                  >
+                    <SelectTrigger className="h-11 rounded-lg">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="hourly">Hourly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Currency */}
+                <div className="space-y-2">
+                  <Label>Currency</Label>
+                  <Select
+                    value={formData.currency}
+                    onValueChange={(val) =>
+                      setFormData((prev) => ({ ...prev, currency: val }))
+                    }
+                  >
+                    <SelectTrigger className="h-11 rounded-lg">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="CFA">CFA</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Salary Amount */}
+                <div className="space-y-2">
+                  <Label>{t("register:labels.salary")}</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+                      {formData.currency === "USD" ? "$" : "CFA"}
+                    </span>
+                    <Input
+                      type="number"
+                      name="salary"
+                      value={formData.salary}
+                      onChange={handleChange}
+                      min={0}
+                      step="0.01"
+                      required
+                      className="h-11 rounded-lg pl-12"
+                      placeholder={
+                        formData.salary_type === "hourly"
+                          ? "e.g. 8"
+                          : "e.g. 1200"
+                      }
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-muted-foreground">
+                    {formData.salary_type === "hourly"
+                      ? "Hourly rate (per hour)"
+                      : "Monthly salary (per month)"}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Joining Date */}
