@@ -57,23 +57,39 @@ const Dashboard = () => {
       const { data: authUser } = await supabase.auth.getUser();
       if (!authUser?.user) return navigate("/login");
 
-      const { data: profile } = await supabase
+      const profilePromise = supabase
         .from("employees")
-        .select("*")
+        .select("id, first_name, last_name, role")
         .eq("id", authUser.user.id)
         .single();
+
+      const employeesPromise = supabase
+        .from("employees")
+        .select("id, first_name, last_name, role");
+
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+
+      const attendancePromise = supabase
+        .from("attendances")
+        .select("id, employee_id, check_in, check_out, status, created_at")
+        .gte("check_in", start.toISOString())
+        .lte("check_in", end.toISOString());
+
+      const [{ data: profile }, { data: emps }, { data: attendance }] =
+        await Promise.all([
+          profilePromise,
+          employeesPromise,
+          attendancePromise,
+        ]);
 
       if (!profile || profile.role !== "admin") return navigate("/login");
 
       setUser(profile);
-
-      const { data: emps } = await supabase.from("employees").select("*");
-      if (emps) setEmployees(emps);
-
-      const { data: attendance } = await supabase
-        .from("attendances")
-        .select("*");
-      if (attendance) setAttendanceRecords(attendance);
+      setEmployees(emps || []);
+      setAttendanceRecords(attendance || []);
     };
 
     init();
@@ -131,12 +147,13 @@ const Dashboard = () => {
     },
   ];
 
+  const employeeMap = new Map(employees.map((e) => [e.id, e]));
+
   const recentActivities = attendanceRecords
     .slice(-5)
     .reverse()
     .map((record) => {
-      const employee = employees.find((emp) => emp.id === record.employee_id);
-      console.log("Employee Data", employee);
+      const employee = employeeMap.get(record.employee_id);
       return {
         name: employee
           ? `${employee.first_name} ${employee.last_name}`
@@ -230,6 +247,14 @@ const Dashboard = () => {
       color: "from-gray-600 to-gray-700",
     },
   ];
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-sm text-gray-600">Loading dashboard...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

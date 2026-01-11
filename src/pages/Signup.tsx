@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const FINGER_API_URL = import.meta.env.VITE_FINGERPR_API_URL
+
 const Signup = () => {
   const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -56,15 +58,23 @@ const Signup = () => {
   const [fingerprintIds, setFingerprintIds] = useState<string[]>([]);
   const [allBiometricData, setAllBiometricData] = useState<string[]>([]);
 
-  const bufToHex = (buffer: ArrayBuffer) =>
-    Array.from(new Uint8Array(buffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+  const verifyDuplicate = async (probePng, existingPng) => {
+    const res = await fetch(`${FINGER_API_URL}/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        probePng,
+        candidatePng: existingPng,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Verify failed");
+    return data; // { match, score, threshold }
+  };
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      // if (event.origin !== window.location.origin) return;
-
       if (event.data?.type === "fingerprint-register") {
         if (capturedCount >= 10) {
           setBiometricLoading(false);
@@ -72,24 +82,60 @@ const Signup = () => {
         }
 
         const newTemplate = event.data.image;
-        const newId = nanoid();
 
-        setFingerprintIds((prev) => [...prev, newId]);
-        setAllBiometricData((prev) => [...prev, newTemplate]);
-        setCapturedCount((prev) => prev + 1);
+        try {
+          // ✅ 1) Duplicate check against already captured fingers
+          if (allBiometricData.length > 0) {
+            for (let i = 0; i < allBiometricData.length; i++) {
+              const existing = allBiometricData[i];
+              if (!existing) continue;
 
-        setBiometricLoading(false);
+              const result = await verifyDuplicate(newTemplate, existing);
 
-        toast({
-          title: `Finger ${capturedCount + 1} Captured ✅`,
-          description:
-            capturedCount < 9 ? "Scan next finger." : "All fingers ready!",
-        });
+              if (result.match) {
+                setBiometricLoading(false);
+
+                toast({
+                  title: "❌ Already Scanned",
+                  description: `This finger has already been scanned. Please scan a different finger.`,
+                  variant: "destructive",
+                });
+
+                return; // ❌ don't add / don't increment
+              }
+            }
+          }
+
+          // ✅ 2) Not duplicate → save it
+          const newId = nanoid();
+
+          setFingerprintIds((prev) => [...prev, newId]);
+          setAllBiometricData((prev) => [...prev, newTemplate]);
+          setCapturedCount((prev) => prev + 1);
+
+          setBiometricLoading(false);
+
+          toast({
+            title: `Finger ${capturedCount + 1} Captured ✅`,
+            description:
+              capturedCount < 9 ? "Scan next finger." : "All fingers ready!",
+          });
+        } catch (err) {
+          console.error(err);
+          setBiometricLoading(false);
+
+          toast({
+            title: "❌ Finger Verify Error",
+            description:
+              "The fingerprint verification service is not accessible. Try again.",
+            variant: "destructive",
+          });
+        }
       }
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [capturedCount]);
+  }, [capturedCount, allBiometricData]);
 
   const handleBiometricCapture = () => {
     if (capturedCount >= 10) return;

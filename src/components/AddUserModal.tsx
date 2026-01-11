@@ -24,12 +24,16 @@ import {
   SelectValue,
 } from "./ui/select";
 
+const FINGER_API_URL = import.meta.env.VITE_FINGERPR_API_URL;
+
 const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
 
-  const [biometricCaptured, setBiometricCaptured] = useState(0);
+  const [capturedCount, setCapturedCount] = useState(0);
+  const [fingerprintId, setFingerprintId] = useState("");
+  const [allBiometricData, setAllBiometricData] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -51,8 +55,17 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
     has_agreed_to_terms: false,
   });
 
-  const [fingerprintId, setFingerprintId] = useState("");
-  const [biometricData, setBiometricData] = useState("");
+  async function verifyDuplicateFinger(probePng: string, candidatePng: string) {
+    const res = await fetch(`${FINGER_API_URL}/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ probePng, candidatePng }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Verify failed");
+    return data; // { match, score, threshold }
+  }
 
   // ✅ Fill form when editing user
   useEffect(() => {
@@ -81,34 +94,65 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "fingerprint-register") return;
 
-      if (event.data?.type === "fingerprint-register") {
-        // Success logic: Increment progress
-        setBiometricCaptured((prev) => Math.min(prev + 1, 10));
+      if (capturedCount >= 10) {
+        setBiometricLoading(false);
+        return;
+      }
 
-        // Agar pehli finger hai ya unique ID chahiye
-        if (!fingerprintId) {
-          setFingerprintId(nanoid());
+      const newTemplate = event.data.image;
+
+      try {
+        // ✅ DUPLICATE CHECK (newTemplate vs already stored)
+        for (let i = 0; i < allBiometricData.length; i++) {
+          const existing = allBiometricData[i];
+          if (!existing) continue;
+
+          const result = await verifyDuplicateFinger(newTemplate, existing);
+          if (result.match) {
+            setBiometricLoading(false);
+
+            toast({
+              title: "❌ Finger Already Scanned",
+              description: `This finger is already registered. Please scan a different finger.`,
+              variant: "destructive",
+            });
+
+            return;
+          }
         }
 
-        toast({
-          title: t("usersManagement:toast.fingerCaptured"),
-          description: t("usersManagement:toast.fingerCapturedDesc", {
-            count: biometricCaptured + 1,
-          }),
-        });
+        // ✅ UNIQUE → SAVE
+        if (!fingerprintId) setFingerprintId(nanoid());
 
+        setAllBiometricData((prev) => [...prev, newTemplate]);
+        setCapturedCount((prev) => prev + 1);
         setBiometricLoading(false);
+
+        toast({
+          title: `Finger ${capturedCount + 1} Captured ✅`,
+          description:
+            capturedCount < 9 ? "Scan next finger." : "All fingers ready!",
+        });
+      } catch (err) {
+        console.error(err);
+        setBiometricLoading(false);
+
+        toast({
+          title: "❌ Finger Verification Failed",
+          description: "Fingerprint API not reachable. Try again.",
+          variant: "destructive",
+        });
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [biometricCaptured, fingerprintId]);
+  }, [capturedCount, allBiometricData, fingerprintId]);
 
   const handleBiometricCapture = () => {
-    if (selectedUser || biometricCaptured >= 10) return;
+    if (selectedUser || capturedCount >= 10) return;
     setBiometricLoading(true);
     iframeRef.current?.contentWindow?.postMessage(
       { action: "start-scan" },
@@ -165,7 +209,9 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
           employment_type,
           emergency_contact,
           emergency_phone,
-          biometric_data: biometricData || null,
+          biometric_data: allBiometricData.length ? allBiometricData : null,
+          raw_template: allBiometricData[0] || null,
+          raw_samples: allBiometricData.length ? allBiometricData : null,
           role,
         })
         .eq("id", selectedUser.id);
@@ -279,8 +325,9 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
         employment_type,
         emergency_contact,
         emergency_phone,
-        biometric_data: biometricData || null,
-        // fingerprint_id: fingerprintId || null,
+        biometric_data: allBiometricData.length ? allBiometricData : null,
+        raw_template: allBiometricData[0] || null,
+        raw_samples: allBiometricData.length ? allBiometricData : null,
         has_agreed_to_terms,
         role,
         status: "active",
@@ -571,41 +618,108 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
             )}
 
             {!selectedUser && (
-              <div className="col-span-2 space-y-3 p-4 bg-slate-50 rounded-lg border">
-                <div className="flex justify-between text-sm font-medium">
-                  <span>{t("usersManagement:biometric.registration")}</span>
-                  <span
-                    className={
-                      biometricCaptured === 10
-                        ? "text-green-600"
-                        : "text-blue-600"
-                    }
-                  >
-                    {biometricCaptured} / 10 Captured
+              <div className="col-span-2 space-y-6 p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <Label className="text-blue-600 font-bold flex items-center gap-2">
+                    <Fingerprint className="h-5 w-5" />
+                    Fingerprint Registration
+                  </Label>
+                  <span className="text-sm font-mono font-bold text-blue-500">
+                    {capturedCount}/10 Done
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+
+                {/* Progress bar and nodes */}
+                <div className="relative flex items-center justify-between px-2 h-20">
+                  <div className="absolute top-[28px] left-0 w-full h-[2px] bg-slate-100 z-0" />
                   <div
-                    className="bg-blue-600 h-full transition-all duration-500"
-                    style={{ width: `${(biometricCaptured / 10) * 100}%` }}
+                    className="absolute top-[28px] left-0 h-[2px] bg-green-500 z-0 transition-all duration-700 ease-in-out"
+                    style={{
+                      width: `${(Math.max(0, capturedCount - 1) / 9) * 100}%`,
+                    }}
                   />
+
+                  {[...Array(10)].map((_, index) => {
+                    const isCaptured = index < capturedCount;
+                    const isCurrent = index === capturedCount;
+                    const isScanning = isCurrent && biometricLoading;
+
+                    return (
+                      <div
+                        key={index}
+                        className="relative z-10 flex flex-col items-center"
+                      >
+                        <div
+                          className={`
+                w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white
+                ${
+                  isCaptured
+                    ? "border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                    : isScanning
+                    ? "border-blue-500 animate-bounce shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                    : "border-slate-200 text-slate-300"
+                }
+              `}
+                        >
+                          <Fingerprint
+                            className={`h-5 w-5 transition-colors duration-500 ${
+                              isCaptured
+                                ? "text-green-500"
+                                : isScanning
+                                ? "text-blue-500"
+                                : "inherit"
+                            }`}
+                          />
+                          {isScanning && (
+                            <div className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping" />
+                          )}
+                        </div>
+
+                        <span
+                          className={`text-[9px] mt-2 font-black transition-colors ${
+                            isCaptured ? "text-green-600" : "text-slate-400"
+                          }`}
+                        >
+                          F-{index + 1}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
+                {/* Capture Button */}
                 <Button
                   type="button"
                   onClick={handleBiometricCapture}
-                  disabled={biometricLoading || biometricCaptured >= 10}
-                  variant="outline"
-                  className="w-full flex gap-2"
+                  disabled={biometricLoading || capturedCount >= 10}
+                  className={`w-full h-12 rounded-xl transition-all duration-500 group overflow-hidden relative shadow-md ${
+                    capturedCount >= 10
+                      ? "bg-slate-400 cursor-not-allowed opacity-80"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
-                  <Fingerprint className="h-4 w-4" />
-                  {biometricLoading
-                    ? t("usersManagement:biometric.waitingScanner")
-                    : biometricCaptured < 10
-                    ? t("usersManagement:biometric.scanFinger", {
-                        count: biometricCaptured + 1,
-                      })
-                    : t("usersManagement:biometric.completed")}
+                  <div className="relative z-10 flex items-center justify-center gap-2">
+                    {capturedCount >= 10 ? (
+                      <>
+                        <Fingerprint className="h-5 w-5" />
+                        <span className="font-bold tracking-tight">
+                          All Fingers Captured
+                        </span>
+                      </>
+                    ) : biometricLoading ? (
+                      <>
+                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Scanning Finger {capturedCount + 1}...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Fingerprint className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                        <span className="font-bold tracking-tight">
+                          Scan Finger {capturedCount + 1}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </Button>
               </div>
             )}
@@ -614,7 +728,9 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading || (!selectedUser && !fingerprintId)}
+                disabled={
+                  loading || (!selectedUser && allBiometricData.length === 0)
+                }
               >
                 {loading
                   ? t("usersManagement:form.processing")

@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const FINGER_API_URL = import.meta.env.VITE_FINGERPR_API_URL;
+
 const EmployeeForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -54,20 +56,58 @@ const EmployeeForm = () => {
     has_agreed_to_terms: false,
   });
 
+  const verifyDuplicateFinger = async (
+    probePng: string,
+    candidatePng: string
+  ) => {
+    const res = await fetch(`${FINGER_API_URL}/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        probePng,
+        candidatePng,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Verify failed");
+    return data; // { match, score, threshold }
+  };
+
   // ✅ Biometric Listener
   useEffect(() => {
-    const handleMessage = (e: MessageEvent) => {
-      if (e.origin !== window.location.origin) return;
+    const handleMessage = async (e: MessageEvent) => {
+      if (e.data?.type !== "fingerprint-register") return;
 
-      if (e.data?.type === "fingerprint-register") {
-        // ✅ limit 10
-        if (capturedCount >= 10) {
-          setBiometricLoading(false);
-          return;
+      if (capturedCount >= 10) {
+        setBiometricLoading(false);
+        return;
+      }
+
+      const newTemplate = e.data.image;
+
+      try {
+        // 🔴 DUPLICATE CHECK
+        for (let i = 0; i < allBiometricData.length; i++) {
+          const existing = allBiometricData[i];
+          if (!existing) continue;
+
+          const result = await verifyDuplicateFinger(newTemplate, existing);
+
+          if (result.match) {
+            setBiometricLoading(false);
+
+            toast({
+              title: "❌ Finger Already Scanned",
+              description: `This finger is already registered. Please scan a different finger.`,
+              variant: "destructive",
+            });
+
+            return; // ❌ STOP HERE
+          }
         }
 
-        const newTemplate = e.data.image;
-
+        // ✅ NOT DUPLICATE → SAVE
         setAllBiometricData((prev) => [...prev, newTemplate]);
         setCapturedCount((prev) => prev + 1);
         setBiometricLoading(false);
@@ -77,12 +117,21 @@ const EmployeeForm = () => {
           description:
             capturedCount < 9 ? "Scan next finger." : "All fingers ready!",
         });
+      } catch (err) {
+        console.error(err);
+        setBiometricLoading(false);
+
+        toast({
+          title: "❌ Finger Verification Failed",
+          description: "Fingerprint service not reachable. Try again.",
+          variant: "destructive",
+        });
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [capturedCount, toast]);
+  }, [capturedCount, allBiometricData, toast]);
 
   const handleBiometricCapture = () => {
     if (capturedCount >= 10) return;
