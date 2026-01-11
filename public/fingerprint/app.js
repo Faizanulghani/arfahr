@@ -2,10 +2,10 @@
 
 const params = new URLSearchParams(globalThis.location.search);
 const mode = params.get("mode") || "attendance";
-const API_URL = "http://localhost:5055"; // ✅ your .NET backend
+const API_URL = "http://52.23.241.43:5055";
 
 let sdk = new Fingerprint.WebApi();
-let employees = []; // ✅ ALL employees here (with biometric_data)
+let employees = [];
 
 function updateStatus(text) {
   const el = document.getElementById("status");
