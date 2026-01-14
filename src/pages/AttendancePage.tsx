@@ -224,7 +224,7 @@ const AttendanceScanner = () => {
       r.employee_id.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    iframe?.contentWindow?.postMessage({ type: "employees", data: clean }, "*");
+    iframes?.contentWindow?.postMessage({ type: "employees", data: clean }, "*");
   });
 
   return (

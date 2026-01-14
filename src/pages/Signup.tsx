@@ -24,12 +24,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const FINGER_API_URL = import.meta.env.VITE_FINGERPR_API_URL
+const FINGER_API_URL = import.meta.env.VITE_FINGERPR_API_URL;
 
 const Signup = () => {
   const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { t } = useTranslation("employee");
+  const [dbTemplates, setDbTemplates] = useState<
+    Array<{ employeeId: string; template: string }>
+  >([]);
 
   const [loading, setLoading] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
@@ -104,6 +107,26 @@ const Signup = () => {
                 return; // ❌ don't add / don't increment
               }
             }
+            if (dbTemplates.length > 0) {
+              for (let i = 0; i < dbTemplates.length; i++) {
+                const { employeeId, template } = dbTemplates[i];
+
+                const result = await verifyDuplicate(newTemplate, template);
+
+                if (result.match) {
+                  setBiometricLoading(false);
+
+                  toast({
+                    title: "❌ Fingerprint Already Registered",
+                    description:
+                      "This fingerprint already belongs to an existing employee. Please login or contact admin.",
+                    variant: "destructive",
+                  });
+
+                  return; // ❌ stop signup capture
+                }
+              }
+            }
           }
 
           // ✅ 2) Not duplicate → save it
@@ -135,7 +158,34 @@ const Signup = () => {
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [capturedCount, allBiometricData]);
+  }, [capturedCount, allBiometricData, dbTemplates]);
+
+  useEffect(() => {
+    const loadDbTemplates = async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, biometric_data")
+        .not("biometric_data", "is", null);
+
+      if (error) {
+        console.error("Failed to load DB templates", error);
+        return;
+      }
+
+      const flat: Array<{ employeeId: string; template: string }> = [];
+      (data || []).forEach((emp: any) => {
+        const arr = Array.isArray(emp.biometric_data) ? emp.biometric_data : [];
+        arr.forEach((t: string) => {
+          if (t) flat.push({ employeeId: emp.id, template: t });
+        });
+      });
+
+      setDbTemplates(flat);
+      console.log("✅ DB templates loaded:", flat.length);
+    };
+
+    loadDbTemplates();
+  }, []);
 
   const handleBiometricCapture = () => {
     if (capturedCount >= 10) return;

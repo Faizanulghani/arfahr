@@ -35,6 +35,9 @@ const EmployeeForm = () => {
   const [biometricLoading, setBiometricLoading] = useState(false);
   const [capturedCount, setCapturedCount] = useState(0);
   const [allBiometricData, setAllBiometricData] = useState<string[]>([]);
+  const [dbTemplates, setDbTemplates] = useState<
+    Array<{ employeeId: string; template: string }>
+  >([]);
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -74,6 +77,32 @@ const EmployeeForm = () => {
     return data; // { match, score, threshold }
   };
 
+  useEffect(() => {
+    const loadDbTemplates = async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, biometric_data")
+        .not("biometric_data", "is", null);
+
+      if (error) {
+        console.error("Failed to load employees biometric_data:", error);
+        return;
+      }
+
+      const flat: Array<{ employeeId: string; template: string }> = [];
+      (data || []).forEach((emp: any) => {
+        const arr = Array.isArray(emp.biometric_data) ? emp.biometric_data : [];
+        arr.forEach((tpl: string) => {
+          if (tpl) flat.push({ employeeId: emp.id, template: tpl });
+        });
+      });
+
+      setDbTemplates(flat);
+    };
+
+    loadDbTemplates();
+  }, []);
+
   // ✅ Biometric Listener
   useEffect(() => {
     const handleMessage = async (e: MessageEvent) => {
@@ -107,6 +136,27 @@ const EmployeeForm = () => {
           }
         }
 
+        // ✅ GLOBAL DUPLICATE CHECK (already registered in DB)
+        for (let i = 0; i < dbTemplates.length; i++) {
+          const { template } = dbTemplates[i];
+          if (!template) continue;
+
+          const result = await verifyDuplicateFinger(newTemplate, template);
+
+          if (result.match) {
+            setBiometricLoading(false);
+
+            toast({
+              title: "❌ Fingerprint Already Registered",
+              description:
+                "This fingerprint is already registered for an employee. Please scan a different finger.",
+              variant: "destructive",
+            });
+
+            return; // ❌ stop
+          }
+        }
+
         // ✅ NOT DUPLICATE → SAVE
         setAllBiometricData((prev) => [...prev, newTemplate]);
         setCapturedCount((prev) => prev + 1);
@@ -131,7 +181,7 @@ const EmployeeForm = () => {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [capturedCount, allBiometricData, toast]);
+  }, [capturedCount, allBiometricData, dbTemplates, toast]);
 
   const handleBiometricCapture = () => {
     if (capturedCount >= 10) return;
@@ -151,7 +201,7 @@ const EmployeeForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (allBiometricData.length < 1) {
+    if (allBiometricData.length < 5) {
       toast({
         title: t("employeeRegistration:toast.error"),
         description: t("employeeRegistration:toast.scanAtLeastOne"),
@@ -227,6 +277,14 @@ const EmployeeForm = () => {
 
         navigate("/dashboard");
       }
+
+      setDbTemplates((prev) => [
+        ...prev,
+        ...allBiometricData.map((tpl) => ({
+          employeeId: authData.user.id,
+          template: tpl,
+        })),
+      ]);
     } catch (err: any) {
       toast({
         title: t("employeeRegistration:toast.registrationFailed"),
@@ -529,7 +587,7 @@ const EmployeeForm = () => {
           <Button
             type="submit"
             className="w-full h-12 text-lg"
-            disabled={isLoading || capturedCount === 0}
+            disabled={isLoading || capturedCount != 5}
           >
             {isLoading
               ? t("employeeRegistration:buttons.saving")

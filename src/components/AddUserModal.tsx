@@ -54,6 +54,9 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
     role: "employee",
     has_agreed_to_terms: false,
   });
+  const [dbTemplates, setDbTemplates] = useState<
+    Array<{ employeeId: string; template: string }>
+  >([]);
 
   async function verifyDuplicateFinger(probePng: string, candidatePng: string) {
     const res = await fetch(`${FINGER_API_URL}/verify`, {
@@ -93,6 +96,34 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
   }, [selectedUser]);
 
   useEffect(() => {
+    const loadDbTemplates = async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, biometric_data")
+        .not("biometric_data", "is", null);
+
+      if (error) {
+        console.error("Failed to load DB templates:", error);
+        return;
+      }
+
+      const flat: Array<{ employeeId: string; template: string }> = [];
+      (data || []).forEach((emp: any) => {
+        const arr = Array.isArray(emp.biometric_data) ? emp.biometric_data : [];
+        arr.forEach((t: string) => {
+          if (t) flat.push({ employeeId: emp.id, template: t });
+        });
+      });
+
+      setDbTemplates(flat);
+      console.log("✅ DB templates loaded:", flat.length);
+    };
+
+    // sirf add-new mode me check chahiye
+    if (!selectedUser) loadDbTemplates();
+  }, [selectedUser]);
+
+  useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
       if (event.data?.type !== "fingerprint-register") return;
 
@@ -123,6 +154,30 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
           }
         }
 
+        // ✅ GLOBAL DUPLICATE CHECK (already registered in DB)
+        if (dbTemplates.length > 0) {
+          for (let i = 0; i < dbTemplates.length; i++) {
+            const { employeeId, template } = dbTemplates[i];
+            if (!template) continue;
+
+            const result = await verifyDuplicateFinger(newTemplate, template);
+
+            // Agar kisi aur user ki finger match ho gayi => BLOCK
+            if (result.match) {
+              setBiometricLoading(false);
+
+              toast({
+                title: "❌ Fingerprint Already Registered",
+                description:
+                  "This fingerprint is already registered for an employee. Please use a different finger or contact admin.",
+                variant: "destructive",
+              });
+
+              return;
+            }
+          }
+        }
+
         // ✅ UNIQUE → SAVE
         if (!fingerprintId) setFingerprintId(nanoid());
 
@@ -149,7 +204,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [capturedCount, allBiometricData, fingerprintId]);
+  }, [capturedCount, allBiometricData, fingerprintId, dbTemplates]);
 
   const handleBiometricCapture = () => {
     if (selectedUser || capturedCount >= 10) return;
@@ -171,6 +226,16 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!selectedUser && allBiometricData.length < 5) {
+      toast({
+        title: "Fingerprint Required",
+        description: "Please scan at least 5 fingers before creating user.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     const {
       first_name,
@@ -729,7 +794,7 @@ const AddUserModal = ({ onClose, onUserAdded, selectedUser }: any) => {
                 type="submit"
                 className="w-full"
                 disabled={
-                  loading || (!selectedUser && allBiometricData.length === 0)
+                  loading || (!selectedUser && allBiometricData.length != 5)
                 }
               >
                 {loading

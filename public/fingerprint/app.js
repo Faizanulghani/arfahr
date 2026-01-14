@@ -2,7 +2,7 @@
 
 const params = new URLSearchParams(globalThis.location.search);
 const mode = params.get("mode") || "attendance";
-const API_URL = "http://52.23.241.43:5055";
+const API_URL = "https://api.arfahr.com";
 
 let sdk = new Fingerprint.WebApi();
 let employees = [];

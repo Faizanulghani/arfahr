@@ -34,7 +34,7 @@
   },
   "toast": {
     "error": "Error",
-    "scanAtLeastOne": "Scan at least 1 finger.",
+    "scanAtLeastOne": "Scan at least 5 finger.",
     "successTitle": "✅ Success",
     "employeeRegistered": "Employee Registered Successfully in Database!",
     "registrationFailed": "❌ Registration Failed",
